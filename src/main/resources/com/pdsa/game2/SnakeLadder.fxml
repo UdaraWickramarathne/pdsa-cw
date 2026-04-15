@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.canvas.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.pdsa.game2.ui.SnakeLadderController"
+      spacing="16" style="-fx-background-color: #1a1a2e; -fx-padding: 16;">
+
+    <!-- Left panel: board canvas -->
+    <VBox spacing="8" minWidth="380">
+        <Text text="Snake and Ladder Board" style="-fx-fill: #e94560; -fx-font-size: 18; -fx-font-weight: bold;"/>
+        <Canvas fx:id="boardCanvas" width="370" height="370"/>
+        <Label text="Green lines = Ladders  |  Red lines = Snakes"
+               style="-fx-text-fill: #a8a8b3; -fx-font-size: 11;"/>
+    </VBox>
+
+    <!-- Right panel: controls -->
+    <VBox spacing="12" HBox.hgrow="ALWAYS">
+        <Text text="Game Controls" style="-fx-fill: #4ecca3; -fx-font-size: 16; -fx-font-weight: bold;"/>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Board size N (6–12):" style="-fx-text-fill: #a8a8b3;"/>
+            <Spinner fx:id="spinnerN" prefWidth="70"/>
+            <Button text="New Round" onAction="#startNewRound"
+                    style="-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"/>
+        </HBox>
+
+        <Separator/>
+
+        <Label text="Algorithm Timings:" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
+        <Label fx:id="lblBfsTime"  text="BFS:  —" style="-fx-text-fill: #4ecca3;"/>
+        <Label fx:id="lblDpTime"   text="DP:   —" style="-fx-text-fill: #f9a826;"/>
+        <Label fx:id="lblCorrectAnswer" text="" style="-fx-text-fill: #a8a8b3;"/>
+
+        <Separator/>
+
+        <Label text="Board Info:" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
+        <TextArea fx:id="lblBoardInfo" editable="false" wrapText="true" prefHeight="120"
+                  style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0; -fx-font-size: 11;"/>
+
+        <Separator/>
+
+        <Label text="Your Name:" style="-fx-text-fill: #a8a8b3;"/>
+        <TextField fx:id="tfPlayerName" promptText="Enter your name"
+                   style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0;"/>
+
+        <Label text="What is the minimum number of dice throws to reach the last cell?"
+               style="-fx-text-fill: #a8a8b3;" wrapText="true"/>
+        <RadioButton fx:id="rbChoice1" text="—" style="-fx-text-fill: #e0e0e0;"/>
+        <RadioButton fx:id="rbChoice2" text="—" style="-fx-text-fill: #e0e0e0;"/>
+        <RadioButton fx:id="rbChoice3" text="—" style="-fx-text-fill: #e0e0e0;"/>
+
+        <Button fx:id="btnSubmit" text="Submit Answer" onAction="#submitAnswer"
+                prefWidth="160" prefHeight="36" disable="true"
+                style="-fx-background-color: #4ecca3; -fx-text-fill: #1a1a2e; -fx-font-weight: bold; -fx-cursor: hand;"/>
+
+        <Label fx:id="lblResult" text="" wrapText="true"
+               style="-fx-font-size: 14; -fx-font-weight: bold;"/>
+    </VBox>
+</HBox>
