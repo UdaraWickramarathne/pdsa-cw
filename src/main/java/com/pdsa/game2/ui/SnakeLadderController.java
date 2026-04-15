@@ -17,7 +17,7 @@ public class SnakeLadderController {
 
     @FXML private Spinner<Integer> spinnerN;
     @FXML private Canvas boardCanvas;
-    @FXML private Label lblBoardInfo;
+    @FXML private TextArea lblBoardInfo;
     @FXML private Label lblBfsTime;
     @FXML private Label lblDpTime;
     @FXML private Label lblCorrectAnswer;
