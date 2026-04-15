@@ -60,8 +60,9 @@ public class SixteenQueensController {
                 List<int[]> thrSolutions = thrSolver.solve();
                 long thrMs = System.currentTimeMillis() - startThr;
 
-                // Save to DB
+                // Save to DB — both solvers produce identical sets; INSERT IGNORE prevents duplicates
                 Game5DB.saveAllSolutions(solutions);
+                Game5DB.saveAllSolutions(thrSolutions);
                 Game5DB.saveTiming(seqMs, thrMs, solutions.size());
 
                 Platform.runLater(() -> {

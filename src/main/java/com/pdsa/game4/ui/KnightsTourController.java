@@ -128,13 +128,36 @@ public class KnightsTourController {
             showAlert("Validation", "Please enter your name.");
             return;
         }
-        if (playerClicks.size() < boardSize * boardSize) {
-            showAlert("Incomplete", "You need to click all " + (boardSize * boardSize) + " cells. " +
-                "You've clicked " + playerClicks.size() + " so far.");
+        if (playerClicks.isEmpty()) {
+            showAlert("Incomplete", "Please click cells to build your tour.");
             return;
         }
 
-        // Validate: correct knight moves + visits every cell exactly once
+        // Validate that the tour starts at the required starting cell
+        int requiredStart = startRow * boardSize + startCol;
+        if (playerClicks.get(0) != requiredStart) {
+            showAlert("Wrong Start",
+                "Your tour must start at the marked cell (" + (startRow + 1) + ", " + (startCol + 1) + "). " +
+                "Please clear your path (start New Round) and begin from the red circle.");
+            return;
+        }
+
+        int total = boardSize * boardSize;
+
+        if (playerClicks.size() < total) {
+            // Check for DRAW: valid partial knight path from the correct start, covering ≥ 50 % of cells
+            if (playerClicks.size() >= total / 2 && isValidPartialKnightPath(playerClicks, boardSize)) {
+                lblResult.setText("DRAW — Valid partial tour! You covered " +
+                    playerClicks.size() + " of " + total + " cells correctly from the start.");
+                lblResult.setStyle("-fx-text-fill: #f9a826; -fx-font-weight: bold; -fx-font-size: 14;");
+            } else {
+                showAlert("Incomplete", "You need to click all " + total + " cells. " +
+                    "You've clicked " + playerClicks.size() + " so far.");
+            }
+            return;
+        }
+
+        // Full tour: correct knight moves + visits every cell exactly once + starts at required cell
         if (isValidKnightTour(playerClicks, boardSize)) {
             lblResult.setText("Correct Knight's Tour! You WIN!");
             lblResult.setStyle("-fx-text-fill: #4ecca3; -fx-font-weight: bold; -fx-font-size: 14;");
@@ -145,6 +168,23 @@ public class KnightsTourController {
             lblResult.setText("Invalid tour. Try again or click 'Show Solution'.");
             lblResult.setStyle("-fx-text-fill: #e94560; -fx-font-weight: bold; -fx-font-size: 14;");
         }
+    }
+
+    /** Returns true if the cell sequence forms a valid partial knight's path (no revisits, valid moves). */
+    private boolean isValidPartialKnightPath(List<Integer> cells, int n) {
+        boolean[] visited = new boolean[n * n];
+        for (int i = 0; i < cells.size(); i++) {
+            int cell = cells.get(i);
+            if (cell < 0 || cell >= n * n || visited[cell]) return false;
+            visited[cell] = true;
+            if (i > 0) {
+                int prev = cells.get(i - 1);
+                int dr = Math.abs(cell / n - prev / n);
+                int dc = Math.abs(cell % n - prev % n);
+                if (!((dr == 2 && dc == 1) || (dr == 1 && dc == 2))) return false;
+            }
+        }
+        return true;
     }
 
     @FXML

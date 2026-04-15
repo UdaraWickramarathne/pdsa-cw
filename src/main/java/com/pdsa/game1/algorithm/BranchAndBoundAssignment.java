@@ -16,6 +16,7 @@ public class BranchAndBoundAssignment {
     private int minCost;
     private int[] bestAssignment;
     private boolean[] columnUsed;
+    private volatile boolean cancelled = false;
 
     public BranchAndBoundAssignment(int[][] costMatrix) {
         this.n = costMatrix.length;
@@ -40,7 +41,11 @@ public class BranchAndBoundAssignment {
         return bestAssignment.clone();
     }
 
+    /** Signal the solver to stop early (used for timeout). */
+    public void cancel() { this.cancelled = true; }
+
     private void branchAndBound(int row, int currentCost, int[] currentAssignment) {
+        if (cancelled) return;
         if (row == n) {
             if (currentCost < minCost) {
                 minCost = currentCost;

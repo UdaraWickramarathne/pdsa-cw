@@ -4,10 +4,12 @@ import com.pdsa.game1.algorithm.BranchAndBoundAssignment;
 import com.pdsa.game1.algorithm.HungarianAlgorithm;
 import com.pdsa.game1.db.Game1DB;
 import com.pdsa.game1.model.AssignmentResult;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
 import java.util.Random;
+import java.util.concurrent.*;
 
 public class MinimumCostController {
 
@@ -31,6 +33,8 @@ public class MinimumCostController {
         tfN.setText(String.valueOf(50 + RNG.nextInt(51)));
     }
 
+    private static final int BB_TIMEOUT_SEC = 5;
+
     @FXML
     public void startNewRound() {
         // Validate input
@@ -46,58 +50,78 @@ public class MinimumCostController {
         lblStatus.setText("Running algorithms...");
         btnNewRound.setDisable(true);
         lblN.setText("N = " + n);
+        taHungarian.setText("Computing...");
+        taBranchBound.setText("Computing (timeout: " + BB_TIMEOUT_SEC + "s)...");
 
         // Generate random cost matrix: values $20 – $200
         int[][] costMatrix = new int[n][n];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
                 costMatrix[i][j] = 20 + RNG.nextInt(181);
+
+        Thread bg = new Thread(() -> {
+            // Run Hungarian Algorithm
+            long startH = System.currentTimeMillis();
+            HungarianAlgorithm hungarian = new HungarianAlgorithm(costMatrix);
+            int[] hAssignment = hungarian.solve();
+            long hungarianMs = System.currentTimeMillis() - startH;
+            int hCost = hungarian.totalCost(hAssignment);
+            AssignmentResult hResult = new AssignmentResult("Hungarian Algorithm", hAssignment, hCost, hungarianMs);
+
+            // Run Branch and Bound on the actual N×N matrix with a timeout
+            BranchAndBoundAssignment bbSolver = new BranchAndBoundAssignment(costMatrix);
+            ExecutorService exec = Executors.newSingleThreadExecutor();
+            Future<int[]> future = exec.submit(bbSolver::solve);
+            exec.shutdown();
+
+            long startBB = System.currentTimeMillis();
+            int[] bbAssignment = null;
+            long bbMs;
+            boolean bbTimedOut;
+            try {
+                bbAssignment = future.get(BB_TIMEOUT_SEC, TimeUnit.SECONDS);
+                bbMs = System.currentTimeMillis() - startBB;
+                bbTimedOut = false;
+            } catch (TimeoutException e) {
+                bbSolver.cancel();
+                future.cancel(true);
+                bbMs = BB_TIMEOUT_SEC * 1000L;
+                bbTimedOut = true;
+            } catch (Exception e) {
+                bbMs = -1;
+                bbTimedOut = true;
             }
-        }
 
-        // Run Hungarian Algorithm
-        long startH = System.currentTimeMillis();
-        HungarianAlgorithm hungarian = new HungarianAlgorithm(costMatrix);
-        int[] hAssignment = hungarian.solve();
-        long hungarianMs = System.currentTimeMillis() - startH;
-        int hCost = hungarian.totalCost(hAssignment);
-        AssignmentResult hResult = new AssignmentResult("Hungarian Algorithm", hAssignment, hCost, hungarianMs);
+            final long finalBbMs = bbMs;
+            final boolean finalBbTimedOut = bbTimedOut;
+            final int[] finalBbAssignment = bbAssignment;
 
-        // Run Branch and Bound (cap at n=20 for speed; skip heavy computation for large n)
-        long bbMs;
-        AssignmentResult bbResult;
-        if (n <= 20) {
-            long startBB = System.currentTimeMillis();
-            BranchAndBoundAssignment bb = new BranchAndBoundAssignment(costMatrix);
-            int[] bbAssignment = bb.solve();
-            bbMs = System.currentTimeMillis() - startBB;
-            bbResult = new AssignmentResult("Branch & Bound", bbAssignment, bb.getMinCost(), bbMs);
-        } else {
-            // For large N, Branch & Bound is too slow — record estimated time and use Hungarian result
-            long startBB = System.currentTimeMillis();
-            // Run on a 20x20 submatrix for timing comparison
-            int[][] sub = new int[20][20];
-            for (int i = 0; i < 20; i++)
-                System.arraycopy(costMatrix[i], 0, sub[i], 0, 20);
-            BranchAndBoundAssignment bb = new BranchAndBoundAssignment(sub);
-            bb.solve();
-            bbMs = System.currentTimeMillis() - startBB;
-            // Extrapolate: note this in the display
-            bbResult = new AssignmentResult(
-                "Branch & Bound (N=20 sample, extrapolated for N=" + n + ")",
-                hAssignment, hCost, bbMs
-            );
-        }
+            Platform.runLater(() -> {
+                int roundId = Game1DB.saveRound(n, hCost, hungarianMs, finalBbMs);
+                lblRoundId.setText("Round ID: " + roundId);
+                taHungarian.setText(hResult.summaryText());
 
-        // Save to database
-        int roundId = Game1DB.saveRound(n, hCost, hungarianMs, bbMs);
-        lblRoundId.setText("Round ID: " + roundId);
+                if (finalBbTimedOut) {
+                    taBranchBound.setText(
+                        "Branch & Bound\n" +
+                        "TIMEOUT (>" + BB_TIMEOUT_SEC + "s) — B&B is O(N!) and impractical for N=" + n + "\n" +
+                        "Time recorded: " + finalBbMs + " ms\n\n" +
+                        "Note: Hungarian O(N³) is the practical algorithm for large N.\n" +
+                        "Hungarian optimal cost: $" + hCost
+                    );
+                } else {
+                    int bbCost = bbSolver.getMinCost();
+                    AssignmentResult bbResult = new AssignmentResult(
+                        "Branch & Bound", finalBbAssignment, bbCost, finalBbMs);
+                    taBranchBound.setText(bbResult.summaryText());
+                }
 
-        // Update UI
-        taHungarian.setText(hResult.summaryText());
-        taBranchBound.setText(bbResult.summaryText());
-        lblStatus.setText("Round complete. Optimal cost: $" + hCost);
-        btnNewRound.setDisable(false);
+                lblStatus.setText("Round complete. Optimal cost: $" + hCost);
+                btnNewRound.setDisable(false);
+            });
+        });
+        bg.setDaemon(true);
+        bg.start();
     }
 
     private void showAlert(String title, String message) {
