@@ -10,10 +10,12 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class SixteenQueensController {
@@ -22,17 +24,16 @@ public class SixteenQueensController {
 
     @FXML private Canvas boardCanvas;
     @FXML private TextField tfPlayerName;
-    @FXML private TextField tfPlacement;
     @FXML private Button btnSubmit;
     @FXML private Button btnPrecompute;
     @FXML private Label lblStatus;
     @FXML private Label lblResult;
     @FXML private Label lblTiming;
     @FXML private Label lblUnclaimed;
-    @FXML private Button btnPlaceOnBoard;
     @FXML private BarChart<String, Number> timeChart;
 
-    private int[] currentQueens = null;
+    // -1 means no queen placed in that column
+    private final int[] userQueens = new int[N];
 
     private final XYChart.Series<String, Number> seriesSeq = new XYChart.Series<>();
     private final XYChart.Series<String, Number> seriesThr = new XYChart.Series<>();
@@ -44,6 +45,10 @@ public class SixteenQueensController {
         timeChart.getData().addAll(seriesSeq, seriesThr);
         loadChartFromDB();
         refreshStatus();
+
+        Arrays.fill(userQueens, -1);
+        boardCanvas.setOnMouseClicked(this::handleBoardClick);
+        drawBoard(userQueens);
     }
 
     private void loadChartFromDB() {
@@ -53,6 +58,35 @@ public class SixteenQueensController {
             seriesSeq.getData().add(new XYChart.Data<>(label, timings.get(i)[0]));
             seriesThr.getData().add(new XYChart.Data<>(label, timings.get(i)[1]));
         }
+    }
+
+    /**
+     * Handles a click on the board canvas.
+     * Clicking an empty cell places a queen there (replacing any previous queen in the same column).
+     * Clicking the same cell as an existing queen removes it.
+     */
+    @FXML
+    public void handleBoardClick(MouseEvent e) {
+        double cw = boardCanvas.getWidth() / N;
+        double ch = boardCanvas.getHeight() / N;
+        int col = (int)(e.getX() / cw);
+        int row = (int)(e.getY() / ch);
+        if (col < 0 || col >= N || row < 0 || row >= N) return;
+
+        if (userQueens[col] == row) {
+            userQueens[col] = -1; // click same cell → remove
+        } else {
+            userQueens[col] = row; // place or move queen within column
+        }
+        drawBoard(userQueens);
+    }
+
+    /** Clears all queens from the interactive board. */
+    @FXML
+    public void clearUserBoard() {
+        Arrays.fill(userQueens, -1);
+        lblResult.setText("");
+        drawBoard(userQueens);
     }
 
     /** Precomputes all solutions (one-time). Shows progress via background thread. */
@@ -95,6 +129,7 @@ public class SixteenQueensController {
                     seriesThr.getData().add(new XYChart.Data<>(label, thrMs));
 
                     refreshStatus();
+                    clearUserBoard();
                     btnPrecompute.setDisable(false);
                 });
             } catch (Exception e) {
@@ -116,73 +151,41 @@ public class SixteenQueensController {
             return;
         }
 
-        String placement = tfPlacement.getText().trim();
-        if (placement.isEmpty()) {
-            showAlert("Validation", "Please enter a queen placement (16 space-separated row numbers).");
-            return;
+        // All 16 columns must have a queen
+        for (int col = 0; col < N; col++) {
+            if (userQueens[col] < 0) {
+                showAlert("Validation", "Please place all 16 queens on the board first. Column " + (col + 1) + " is empty.");
+                return;
+            }
         }
 
-        // Validate format
-        String[] parts = placement.split("\\s+");
-        if (parts.length != N) {
-            showAlert("Validation", "Enter exactly " + N + " row numbers (one per column), separated by spaces.");
-            return;
-        }
+        String normalizedPlacement = Game5DB.toPlacementString(userQueens);
+        String result = Game5DB.claimSolution(normalizedPlacement, name);
 
-        try {
-            int[] queens = new int[N];
-            for (int i = 0; i < N; i++) {
-                queens[i] = Integer.parseInt(parts[i]) - 1; // convert to 0-indexed
-                if (queens[i] < 0 || queens[i] >= N)
-                    throw new NumberFormatException("Row " + (i + 1) + " out of range.");
-            }
-
-            // Normalize to DB format
-            String normalizedPlacement = Game5DB.toPlacementString(queens);
-            String result = Game5DB.claimSolution(normalizedPlacement, name);
-            currentQueens = queens;
-            drawBoard(queens);
-
-            switch (result) {
-                case "WIN" -> {
-                    lblResult.setText("Correct! You WIN! Solution claimed by " + name);
-                    lblResult.setStyle("-fx-text-fill: #4ecca3; -fx-font-weight: bold; -fx-font-size: 13;");
-                    refreshStatus();
-                }
-                case "ALREADY_CLAIMED" -> {
-                    lblResult.setText("This solution has already been claimed. Try a different arrangement!");
-                    lblResult.setStyle("-fx-text-fill: #f9a826; -fx-font-weight: bold; -fx-font-size: 13;");
-                }
-                case "NOT_FOUND" -> {
-                    lblResult.setText("Incorrect arrangement. No two queens should threaten each other.");
-                    lblResult.setStyle("-fx-text-fill: #e94560; -fx-font-weight: bold; -fx-font-size: 13;");
-                }
-            }
-
-            // Check if all solutions claimed
-            int unclaimed = Game5DB.unclaimedCount();
-            if (unclaimed == 0) {
-                lblResult.setText(lblResult.getText() +
-                    "\n\nAll " + N + "-queens solutions have been identified! Resetting cycle...");
-                Game5DB.resetAllClaimed();
+        switch (result) {
+            case "WIN" -> {
+                lblResult.setText("Correct! You WIN! Solution claimed by " + name);
+                lblResult.setStyle("-fx-text-fill: #4ecca3; -fx-font-weight: bold; -fx-font-size: 13;");
                 refreshStatus();
             }
-
-        } catch (NumberFormatException e) {
-            showAlert("Validation", "Invalid input: " + e.getMessage());
+            case "ALREADY_CLAIMED" -> {
+                lblResult.setText("This solution has already been claimed. Try a different arrangement!");
+                lblResult.setStyle("-fx-text-fill: #f9a826; -fx-font-weight: bold; -fx-font-size: 13;");
+            }
+            case "NOT_FOUND" -> {
+                lblResult.setText("Incorrect arrangement. No two queens should threaten each other.");
+                lblResult.setStyle("-fx-text-fill: #e94560; -fx-font-weight: bold; -fx-font-size: 13;");
+            }
         }
-    }
 
-    @FXML
-    public void placeOnBoard() {
-        String placement = tfPlacement.getText().trim();
-        String[] parts = placement.split("\\s+");
-        if (parts.length != N) return;
-        try {
-            int[] queens = new int[N];
-            for (int i = 0; i < N; i++) queens[i] = Integer.parseInt(parts[i]) - 1;
-            drawBoard(queens);
-        } catch (NumberFormatException ignored) {}
+        // Check if all solutions claimed → reset cycle
+        int unclaimed = Game5DB.unclaimedCount();
+        if (unclaimed == 0) {
+            lblResult.setText(lblResult.getText() +
+                "\n\nAll " + N + "-queens solutions have been identified! Resetting cycle...");
+            Game5DB.resetAllClaimed();
+            refreshStatus();
+        }
     }
 
     private void drawBoard(int[] queens) {
@@ -200,10 +203,11 @@ public class SixteenQueensController {
             }
         }
 
-        // Draw queens
+        // Draw queens; skip columns with no queen (value -1)
         if (queens != null) {
             for (int col = 0; col < N; col++) {
                 int row = queens[col];
+                if (row < 0) continue;
                 double x = col * cw + cw * 0.1;
                 double y = row * ch + ch * 0.1;
                 gc.setFill(Color.web("#e94560"));

@@ -39,6 +39,7 @@ public class KnightsTourController {
     private int[] correctTour;
     private int currentRoundId = -1;
     private List<Integer> playerClicks = new ArrayList<>();
+    private List<Integer> suggestedMoves = new ArrayList<>();
 
     private final ToggleGroup sizeGroup = new ToggleGroup();
     private final Random rng = new Random();
@@ -70,6 +71,7 @@ public class KnightsTourController {
         btnShowSolution.setDisable(true);
         lblStatus.setText("Computing tours...");
         playerClicks.clear();
+        suggestedMoves.clear();
         lblResult.setText("");
 
         startRow = rng.nextInt(boardSize);
@@ -185,6 +187,7 @@ public class KnightsTourController {
     public void showSolution() {
         if (correctTour != null) {
             playerClicks.clear();
+            suggestedMoves.clear();
             for (int cell : correctTour) playerClicks.add(cell);
             drawBoard(playerClicks);
             lblResult.setText("Solution shown (Warnsdorff's tour).");
@@ -194,17 +197,51 @@ public class KnightsTourController {
 
     @FXML
     public void handleCanvasClick(javafx.scene.input.MouseEvent e) {
+        if (currentRoundId < 0) return; // no round started yet
         double cellW = boardCanvas.getWidth() / boardSize;
         double cellH = boardCanvas.getHeight() / boardSize;
         int col = (int)(e.getX() / cellW);
         int row = (int)(e.getY() / cellH);
-        if (row >= 0 && row < boardSize && col >= 0 && col < boardSize) {
-            int cell = row * boardSize + col;
-            if (!playerClicks.contains(cell)) {
-                playerClicks.add(cell);
-                drawBoard(playerClicks);
+        if (row < 0 || row >= boardSize || col < 0 || col >= boardSize) return;
+        int cell = row * boardSize + col;
+
+        if (playerClicks.isEmpty()) {
+            // First click must be the required start position
+            int requiredStart = startRow * boardSize + startCol;
+            if (cell != requiredStart) {
+                lblStatus.setText("Start at the red circle: (" + (startRow + 1) + ", " + (startCol + 1) + ")");
+                return;
+            }
+            playerClicks.add(cell);
+            suggestedMoves = computeValidMoves(cell);
+        } else {
+            // Only allow valid L-shape moves from the current position
+            if (!suggestedMoves.contains(cell)) return;
+            playerClicks.add(cell);
+            suggestedMoves = computeValidMoves(cell);
+            if (suggestedMoves.isEmpty() && playerClicks.size() < boardSize * boardSize) {
+                lblStatus.setText("No valid moves from here. Start a new round to try again.");
             }
         }
+        drawBoard(playerClicks);
+    }
+
+    /** Returns all unvisited cells reachable by an L-shape knight move from currentCell. */
+    private List<Integer> computeValidMoves(int currentCell) {
+        int[] DR = {-2, -2, -1, -1,  1,  1,  2,  2};
+        int[] DC = {-1,  1, -2,  2, -2,  2, -1,  1};
+        int row = currentCell / boardSize;
+        int col = currentCell % boardSize;
+        List<Integer> moves = new ArrayList<>();
+        for (int i = 0; i < 8; i++) {
+            int nr = row + DR[i];
+            int nc = col + DC[i];
+            if (nr >= 0 && nr < boardSize && nc >= 0 && nc < boardSize) {
+                int next = nr * boardSize + nc;
+                if (!playerClicks.contains(next)) moves.add(next);
+            }
+        }
+        return moves;
     }
 
     private void drawBoard(List<Integer> highlighted) {
@@ -250,6 +287,16 @@ public class KnightsTourController {
                     (c2 % boardSize) * cw + cw / 2, (c2 / boardSize) * ch + ch / 2
                 );
             }
+        }
+
+        // Highlight valid next moves in yellow
+        for (int cell : suggestedMoves) {
+            int r = cell / boardSize;
+            int c = cell % boardSize;
+            gc.setFill(Color.web("#f9a82655")); // semi-transparent yellow
+            gc.fillRect(c * cw + 2, r * ch + 2, cw - 4, ch - 4);
+            gc.setFill(Color.web("#f9a826"));
+            gc.fillOval(c * cw + cw * 0.35, r * ch + ch * 0.35, cw * 0.3, ch * 0.3);
         }
     }
 

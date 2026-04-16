@@ -16,7 +16,7 @@
         <!-- Left: chessboard -->
         <VBox spacing="8" minWidth="480">
             <Text text="Knight's Tour" style="-fx-fill: #e94560; -fx-font-size: 22; -fx-font-weight: bold;"/>
-            <Label text="Click cells in the order the knight should visit them."
+            <Label text="Start at the red circle. Yellow cells show valid L-shape moves."
                    style="-fx-text-fill: #a8a8b3; -fx-font-size: 11;"/>
             <Canvas fx:id="boardCanvas" width="460" height="460"
                     onMouseClicked="#handleCanvasClick"
