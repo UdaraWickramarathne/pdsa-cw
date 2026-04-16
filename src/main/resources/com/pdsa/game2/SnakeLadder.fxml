@@ -6,72 +6,128 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.pdsa.game2.ui.SnakeLadderController"
-      style="-fx-background-color: #1a1a2e;">
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.pdsa.game2.ui.SnakeLadderController">
 
-    <!-- Main content: board + controls side by side -->
-    <HBox spacing="16" style="-fx-padding: 16;" VBox.vgrow="ALWAYS">
+    <VBox styleClass="game-root">
 
-        <!-- Left panel: board canvas -->
-        <VBox spacing="8" minWidth="380">
-            <Text text="Snake and Ladder Board" style="-fx-fill: #e94560; -fx-font-size: 18; -fx-font-weight: bold;"/>
-            <Canvas fx:id="boardCanvas" width="370" height="370"/>
-            <Label text="Green lines = Ladders  |  Red lines = Snakes"
-                   style="-fx-text-fill: #a8a8b3; -fx-font-size: 11;"/>
+        <!-- Toolbar -->
+        <HBox styleClass="game-toolbar">
+            <Text text="🪜 SNAKE &amp; LADDER" styleClass="game-title-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblRoundBadge" text="ROUND —" styleClass="round-badge"/>
+            <Region style="-fx-pref-width: 12;"/>
+            <ToggleButton fx:id="btnHistory" text="⏶ HISTORY" styleClass="btn-history"
+                          onAction="#toggleHistory"/>
+        </HBox>
+
+        <!-- Inline banner -->
+        <HBox fx:id="bannerBox" styleClass="inline-banner" visible="false" managed="false">
+            <Label fx:id="bannerLabel" styleClass="banner-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <!-- Main split: board left, controls right -->
+        <HBox spacing="0" VBox.vgrow="ALWAYS">
+
+            <!-- Board pane -->
+            <VBox spacing="8" style="-fx-padding: 12 8 12 16;" minWidth="520">
+                <HBox alignment="CENTER_LEFT" spacing="12">
+                    <Label text="Board N×N" styleClass="section-title"/>
+                    <Spinner fx:id="spinnerN" prefWidth="70"/>
+                    <Button text="▶ NEW ROUND" onAction="#startNewRound"
+                            styleClass="btn-primary" prefHeight="32"
+                            style="-fx-font-size: 11px; -fx-padding: 5 14;"/>
+                    <ProgressIndicator fx:id="piBoard" prefWidth="22" prefHeight="22"
+                                       visible="false" managed="false"/>
+                </HBox>
+
+                <!-- Legend chips -->
+                <HBox spacing="12" alignment="CENTER_LEFT">
+                    <Label text="●" style="-fx-text-fill: #00F5FF; -fx-font-size: 14px;"/>
+                    <Label text="Ladders" styleClass="ui-caption"/>
+                    <Label text="●" style="-fx-text-fill: #FF2E88; -fx-font-size: 14px;"/>
+                    <Label text="Snakes" styleClass="ui-caption"/>
+                </HBox>
+
+                <VBox styleClass="board-wrapper">
+                    <Canvas fx:id="boardCanvas" width="490" height="490"/>
+                </VBox>
+
+                <!-- Board info terminal -->
+                <TextArea fx:id="lblBoardInfo" editable="false" wrapText="true"
+                          prefHeight="100" VBox.vgrow="NEVER"/>
+            </VBox>
+
+            <!-- Separator -->
+            <Separator orientation="VERTICAL" style="-fx-padding: 0 4;"/>
+
+            <!-- Controls pane -->
+            <VBox spacing="10" HBox.hgrow="ALWAYS" style="-fx-padding: 12 16 12 8;">
+
+                <!-- Algorithm timing card -->
+                <VBox styleClass="stat-card" spacing="6">
+                    <Label text="ALGORITHM TIMINGS" styleClass="section-title"/>
+                    <Label fx:id="lblBfsTime"        text="BFS:  —" styleClass="label-cyan"/>
+                    <Label fx:id="lblDpTime"          text="DP:    —" styleClass="label-amber"/>
+                    <Label fx:id="lblCorrectAnswer"  text="" styleClass="label-dim"/>
+                </VBox>
+
+                <!-- Player card -->
+                <VBox styleClass="neon-panel" spacing="6">
+                    <Label text="PLAYER" styleClass="section-title"/>
+                    <Label text="Your name:" styleClass="label-dim"/>
+                    <TextField fx:id="tfPlayerName" promptText="Enter your name"/>
+                </VBox>
+
+                <!-- Quiz card -->
+                <VBox styleClass="neon-panel" spacing="8" VBox.vgrow="ALWAYS">
+                    <Label text="QUIZ" styleClass="section-title"/>
+                    <Label text="Minimum dice throws to reach the last cell?"
+                           style="-fx-text-fill: #B8A7E0; -fx-font-size: 13px; -fx-font-weight: bold;"
+                           wrapText="true"/>
+                    <!-- Three arcade-tile choice buttons -->
+                    <HBox spacing="10" alignment="CENTER">
+                        <Button fx:id="btnChoice1" text="—" styleClass="choice-btn"
+                                onAction="#selectChoice1"/>
+                        <Button fx:id="btnChoice2" text="—" styleClass="choice-btn"
+                                onAction="#selectChoice2"/>
+                        <Button fx:id="btnChoice3" text="—" styleClass="choice-btn"
+                                onAction="#selectChoice3"/>
+                    </HBox>
+                    <Button fx:id="btnSubmit" text="⏎ SUBMIT ANSWER" onAction="#submitAnswer"
+                            styleClass="btn-secondary" prefWidth="200" prefHeight="36"
+                            disable="true"/>
+                    <Label fx:id="lblResult" text="" wrapText="true"
+                           style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+                </VBox>
+
+            </VBox>
+        </HBox>
+
+        <!-- Timing chart -->
+        <VBox style="-fx-padding: 0 16 12 16;" spacing="4" VBox.vgrow="NEVER">
+            <Label text="Algorithm Timing per Round (ms)" styleClass="label-dim"
+                   style="-fx-font-weight: bold;"/>
+            <BarChart fx:id="timeChart" prefHeight="180" animated="false"
+                      styleClass="chart-dark">
+                <xAxis><CategoryAxis label="Round"/></xAxis>
+                <yAxis><NumberAxis label="Time (ms)"/></yAxis>
+            </BarChart>
         </VBox>
 
-        <!-- Right panel: controls -->
-        <VBox spacing="12" HBox.hgrow="ALWAYS">
-            <Text text="Game Controls" style="-fx-fill: #4ecca3; -fx-font-size: 16; -fx-font-weight: bold;"/>
-
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="Board size N (6–12):" style="-fx-text-fill: #a8a8b3;"/>
-                <Spinner fx:id="spinnerN" prefWidth="70"/>
-                <Button text="New Round" onAction="#startNewRound"
-                        style="-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"/>
-            </HBox>
-
-            <Separator/>
-
-            <Label text="Algorithm Timings:" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
-            <Label fx:id="lblBfsTime"  text="BFS:  —" style="-fx-text-fill: #4ecca3;"/>
-            <Label fx:id="lblDpTime"   text="DP:   —" style="-fx-text-fill: #f9a826;"/>
-            <Label fx:id="lblCorrectAnswer" text="" style="-fx-text-fill: #a8a8b3;"/>
-
-            <Separator/>
-
-            <Label text="Board Info:" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
-            <TextArea fx:id="lblBoardInfo" editable="false" wrapText="true" prefHeight="120"
-                      style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0; -fx-font-size: 11;"/>
-
-            <Separator/>
-
-            <Label text="Your Name:" style="-fx-text-fill: #a8a8b3;"/>
-            <TextField fx:id="tfPlayerName" promptText="Enter your name"
-                       style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0;"/>
-
-            <Label text="What is the minimum number of dice throws to reach the last cell?"
-                   style="-fx-text-fill: #a8a8b3;" wrapText="true"/>
-            <RadioButton fx:id="rbChoice1" text="—" style="-fx-text-fill: #e0e0e0;"/>
-            <RadioButton fx:id="rbChoice2" text="—" style="-fx-text-fill: #e0e0e0;"/>
-            <RadioButton fx:id="rbChoice3" text="—" style="-fx-text-fill: #e0e0e0;"/>
-
-            <Button fx:id="btnSubmit" text="Submit Answer" onAction="#submitAnswer"
-                    prefWidth="160" prefHeight="36" disable="true"
-                    style="-fx-background-color: #4ecca3; -fx-text-fill: #1a1a2e; -fx-font-weight: bold; -fx-cursor: hand;"/>
-
-            <Label fx:id="lblResult" text="" wrapText="true"
-                   style="-fx-font-size: 14; -fx-font-weight: bold;"/>
-        </VBox>
-    </HBox>
-
-    <!-- Algorithm timing chart -->
-    <VBox style="-fx-padding: 0 16 12 16;" spacing="4">
-        <Label text="Algorithm Timing per Round (ms)" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
-        <BarChart fx:id="timeChart" prefHeight="200" animated="false">
-            <xAxis><CategoryAxis label="Round"/></xAxis>
-            <yAxis><NumberAxis label="Time (ms)"/></yAxis>
-        </BarChart>
     </VBox>
-</VBox>
+
+    <!-- Records drawer -->
+    <VBox fx:id="recordsDrawer" styleClass="records-drawer"
+          StackPane.alignment="CENTER_RIGHT" visible="false">
+        <HBox styleClass="drawer-header" alignment="CENTER_LEFT" spacing="8">
+            <Label text="RECORDS" styleClass="drawer-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="✕" styleClass="btn-ghost"
+                    style="-fx-padding: 1 6 1 6; -fx-font-size: 11px;"
+                    onAction="#closeDrawer"/>
+        </HBox>
+        <TabPane fx:id="recordsTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE"/>
+    </VBox>
+
+</StackPane>

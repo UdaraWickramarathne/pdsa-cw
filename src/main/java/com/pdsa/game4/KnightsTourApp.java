@@ -1,13 +1,10 @@
 package com.pdsa.game4;
 
+import com.pdsa.util.Theme;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- * Entry point for Game 4 — Knight's Tour.
- * Called from the main menu. Opens in its own Stage.
- */
 public class KnightsTourApp {
 
     public void show() {
@@ -17,8 +14,12 @@ public class KnightsTourApp {
             );
             Stage stage = new Stage();
             stage.setTitle("Game 4 — Knight's Tour");
-            stage.setScene(new Scene(loader.load(), 900, 900));
-            stage.setResizable(false);
+            Scene scene = new Scene(loader.load(), 1120, 1020);
+            Theme.apply(stage, scene);
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(1020);
+            stage.setMinHeight(920);
             stage.show();
         } catch (Exception e) {
             throw new RuntimeException("Could not load Knight's Tour game: " + e.getMessage(), e);

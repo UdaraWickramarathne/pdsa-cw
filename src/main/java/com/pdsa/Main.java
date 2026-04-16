@@ -1,5 +1,6 @@
 package com.pdsa;
 
+import com.pdsa.util.Theme;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -9,12 +10,15 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        Theme.loadFonts();
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/pdsa/MainMenu.fxml"));
-        Scene scene = new Scene(loader.load(), 700, 500);
-        scene.getStylesheets().add(getClass().getResource("/com/pdsa/style.css").toExternalForm());
-        primaryStage.setTitle("PDSA Coursework — Game Menu");
+        Scene scene = new Scene(loader.load(), 960, 640);
+        Theme.apply(primaryStage, scene);
+        primaryStage.setTitle("PDSA Arcade");
         primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
+        primaryStage.setMinWidth(880);
+        primaryStage.setMinHeight(600);
         primaryStage.show();
     }
 

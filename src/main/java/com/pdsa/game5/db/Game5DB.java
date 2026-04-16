@@ -208,6 +208,19 @@ public class Game5DB {
         return null;
     }
 
+    /** Returns one valid solution as a 0-indexed int[] (queen row per column), or null if none exist. */
+    public static int[] fetchOneSolution() {
+        String sql = "SELECT placement FROM game5_solutions LIMIT 1";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) return parsePlacement(rs.getString("placement"));
+        } catch (SQLException e) {
+            System.err.println("[Game5DB] fetchOneSolution error: " + e.getMessage());
+        }
+        return null;
+    }
+
     /** Returns all timing records ordered by id. Each entry is [sequential_ms, threaded_ms]. */
     public static List<long[]> getAllTimings() {
         List<long[]> result = new ArrayList<>();

@@ -1,13 +1,10 @@
 package com.pdsa.game5;
 
+import com.pdsa.util.Theme;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- * Entry point for Game 5 — Sixteen Queens.
- * Called from the main menu. Opens in its own Stage.
- */
 public class SixteenQueensApp {
 
     public void show() {
@@ -17,8 +14,12 @@ public class SixteenQueensApp {
             );
             Stage stage = new Stage();
             stage.setTitle("Game 5 — Sixteen Queens Puzzle");
-            stage.setScene(new Scene(loader.load(), 900, 880));
-            stage.setResizable(false);
+            Scene scene = new Scene(loader.load(), 1120, 1020);
+            Theme.apply(stage, scene);
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(1020);
+            stage.setMinHeight(920);
             stage.show();
         } catch (Exception e) {
             throw new RuntimeException("Could not load Sixteen Queens game: " + e.getMessage(), e);

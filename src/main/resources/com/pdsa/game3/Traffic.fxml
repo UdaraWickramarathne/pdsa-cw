@@ -6,47 +6,111 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.pdsa.game3.ui.TrafficController"
-      spacing="10" style="-fx-background-color: #1a1a2e; -fx-padding: 16;">
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.pdsa.game3.ui.TrafficController">
 
-    <Text text="Traffic Simulation — Max Flow" style="-fx-fill: #e94560; -fx-font-size: 22; -fx-font-weight: bold;"/>
+    <VBox styleClass="game-root">
 
-    <!-- Graph canvas -->
-    <Canvas fx:id="graphCanvas" width="760" height="300"
-            style="-fx-border-color: #333355; -fx-border-width: 1;"/>
+        <!-- Toolbar -->
+        <HBox styleClass="game-toolbar">
+            <Text text="🚦 TRAFFIC FLOW" styleClass="game-title-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblRoundBadge" text="ROUND —" styleClass="round-badge"/>
+            <Region style="-fx-pref-width: 12;"/>
+            <ToggleButton fx:id="btnHistory" text="⏶ HISTORY" styleClass="btn-history"
+                          onAction="#toggleHistory"/>
+        </HBox>
 
-    <Label text="Green = Source (A)   |   Red = Sink (T)   |   Edge labels = capacity (vehicles/min)"
-           style="-fx-text-fill: #a8a8b3; -fx-font-size: 11;"/>
+        <!-- Inline banner -->
+        <HBox fx:id="bannerBox" styleClass="inline-banner" visible="false" managed="false">
+            <Label fx:id="bannerLabel" styleClass="banner-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+        </HBox>
 
-    <!-- Algorithm timings -->
-    <HBox spacing="30">
-        <Label fx:id="lblFF" text="Ford-Fulkerson: —" style="-fx-text-fill: #4ecca3; -fx-font-weight: bold;"/>
-        <Label fx:id="lblEK" text="Edmonds-Karp:   —" style="-fx-text-fill: #f9a826; -fx-font-weight: bold;"/>
-    </HBox>
+        <!-- Graph canvas -->
+        <VBox styleClass="board-wrapper" style="-fx-margin: 12 16 4 16; -fx-padding: 6;">
+            <Canvas fx:id="graphCanvas" width="960" height="420"/>
+        </VBox>
 
-    <Label fx:id="lblRoundInfo" text="" style="-fx-text-fill: #a8a8b3;"/>
+        <!-- Legend -->
+        <HBox spacing="16" alignment="CENTER_LEFT" style="-fx-padding: 4 16 4 16;">
+            <Label text="●" style="-fx-text-fill: #39FF14; -fx-font-size: 14px;"/>
+            <Label text="Source A" styleClass="ui-caption"/>
+            <Label text="●" style="-fx-text-fill: #FF2E88; -fx-font-size: 14px;"/>
+            <Label text="Sink T" styleClass="ui-caption"/>
+            <Label text="━" style="-fx-text-fill: #6A5A9C; -fx-font-size: 14px;"/>
+            <Label text="Edge" styleClass="ui-caption"/>
+            <Label text="●" style="-fx-text-fill: #FFE500; -fx-font-size: 12px;"/>
+            <Label text="Capacity (vehicles/min)" styleClass="ui-caption"/>
+        </HBox>
 
-    <!-- Player input -->
-    <HBox spacing="12" alignment="CENTER_LEFT">
-        <Label text="Your Name:" style="-fx-text-fill: #a8a8b3;"/>
-        <TextField fx:id="tfPlayerName" promptText="Enter your name" prefWidth="160"
-                   style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0;"/>
-        <Label text="Max Flow Answer:" style="-fx-text-fill: #a8a8b3;"/>
-        <TextField fx:id="tfAnswer" promptText="Enter number" prefWidth="100"
-                   style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0;"/>
-        <Button fx:id="btnSubmit" text="Submit" onAction="#submitAnswer"
-                style="-fx-background-color: #4ecca3; -fx-text-fill: #1a1a2e; -fx-font-weight: bold; -fx-cursor: hand;"/>
-        <Button text="New Round" onAction="#startNewRound"
-                style="-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;"/>
-    </HBox>
+        <!-- Algorithm timings -->
+        <HBox spacing="16" style="-fx-padding: 4 16 8 16;">
+            <Label fx:id="lblFF" text="Ford-Fulkerson: —" styleClass="label-cyan"
+                   style="-fx-font-weight: bold;"/>
+            <Label fx:id="lblEK" text="Edmonds-Karp: —" styleClass="label-amber"
+                   style="-fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblRoundInfo" text="" styleClass="label-dim"/>
+        </HBox>
 
-    <Label fx:id="lblResult" text="" wrapText="true"/>
+        <!-- Not-started overlay — shown until first round -->
+        <StackPane fx:id="startOverlay" style="-fx-padding: 8 16;">
+            <Button text="▶ START FIRST ROUND" onAction="#startNewRound"
+                    styleClass="btn-ghost" prefHeight="36"/>
+        </StackPane>
 
-    <!-- Algorithm timing chart -->
-    <Label text="Algorithm Timing per Round (ms)" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
-    <BarChart fx:id="timeChart" prefHeight="220" animated="false" VBox.vgrow="NEVER">
-        <xAxis><CategoryAxis label="Round"/></xAxis>
-        <yAxis><NumberAxis label="Time (ms)"/></yAxis>
-    </BarChart>
-</VBox>
+        <!-- Player input — two separate cards -->
+        <HBox spacing="12" style="-fx-padding: 4 16 8 16;" alignment="CENTER_LEFT">
+            <!-- Guess card -->
+            <VBox styleClass="neon-panel" spacing="6" HBox.hgrow="ALWAYS">
+                <Label text="YOUR GUESS" styleClass="section-title"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Name:" styleClass="label-dim"/>
+                    <TextField fx:id="tfPlayerName" promptText="Enter your name" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Label text="Max flow:" styleClass="label-dim"/>
+                    <TextField fx:id="tfAnswer" promptText="Enter number" prefWidth="100"/>
+                    <Button fx:id="btnSubmit" text="⏎ SUBMIT" onAction="#submitAnswer"
+                            styleClass="btn-secondary" prefHeight="32"
+                            style="-fx-font-size: 11px; -fx-padding: 5 14;"/>
+                </HBox>
+                <Label fx:id="lblResult" text="" wrapText="true"
+                       style="-fx-font-size: 14px; -fx-font-weight: bold;"/>
+            </VBox>
+
+            <!-- New round card -->
+            <VBox styleClass="stat-card" spacing="6" alignment="CENTER">
+                <Label text="NEW ROUND" styleClass="section-title"/>
+                <Button text="▶ NEW ROUND" onAction="#startNewRound"
+                        styleClass="btn-primary" prefHeight="36"/>
+            </VBox>
+        </HBox>
+
+        <!-- Chart -->
+        <VBox style="-fx-padding: 0 16 12 16;" spacing="4" VBox.vgrow="NEVER">
+            <Label text="Algorithm Timing per Round (ms)" styleClass="label-dim"
+                   style="-fx-font-weight: bold;"/>
+            <BarChart fx:id="timeChart" prefHeight="180" animated="false"
+                      styleClass="chart-dark">
+                <xAxis><CategoryAxis label="Round"/></xAxis>
+                <yAxis><NumberAxis label="Time (ms)"/></yAxis>
+            </BarChart>
+        </VBox>
+
+    </VBox>
+
+    <!-- Records drawer -->
+    <VBox fx:id="recordsDrawer" styleClass="records-drawer"
+          StackPane.alignment="CENTER_RIGHT" visible="false">
+        <HBox styleClass="drawer-header" alignment="CENTER_LEFT" spacing="8">
+            <Label text="RECORDS" styleClass="drawer-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="✕" styleClass="btn-ghost"
+                    style="-fx-padding: 1 6 1 6; -fx-font-size: 11px;"
+                    onAction="#closeDrawer"/>
+        </HBox>
+        <TabPane fx:id="recordsTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE"/>
+    </VBox>
+
+</StackPane>

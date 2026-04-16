@@ -5,56 +5,101 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.pdsa.game1.ui.MinimumCostController"
-      spacing="12" style="-fx-background-color: #1a1a2e; -fx-padding: 20;">
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.pdsa.game1.ui.MinimumCostController">
 
-    <!-- Header -->
-    <HBox alignment="CENTER_LEFT" spacing="12">
-        <Text text="Minimum Cost Assignment" style="-fx-fill: #e94560; -fx-font-size: 22; -fx-font-weight: bold;"/>
-    </HBox>
+    <!-- Main game content -->
+    <VBox styleClass="game-root" VBox.vgrow="ALWAYS">
 
-    <!-- Input row -->
-    <HBox spacing="12" alignment="CENTER_LEFT">
-        <Label text="Number of Tasks (50 – 100):" style="-fx-text-fill: #a8a8b3;"/>
-        <TextField fx:id="tfN" promptText="e.g. 75" prefWidth="80"
-                   style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0;"/>
-        <Button text="Random" onAction="#fillRandom"
-                style="-fx-background-color: #555577; -fx-text-fill: white; -fx-cursor: hand;"/>
-    </HBox>
+        <!-- Toolbar -->
+        <HBox styleClass="game-toolbar">
+            <Text text="⚙ MIN COST" styleClass="game-title-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblRoundId" text="ROUND —" styleClass="round-badge"/>
+            <Region style="-fx-pref-width: 12;"/>
+            <ToggleButton fx:id="btnHistory" text="⏶ HISTORY" styleClass="btn-history"
+                          onAction="#toggleHistory"/>
+        </HBox>
 
-    <!-- Status bar -->
-    <HBox spacing="20" alignment="CENTER_LEFT">
-        <Label fx:id="lblN" text="N = ?" style="-fx-text-fill: #a8a8b3;"/>
-        <Label fx:id="lblRoundId" text="Round ID: —" style="-fx-text-fill: #a8a8b3;"/>
-        <Label fx:id="lblStatus" text="" style="-fx-text-fill: #4ecca3; -fx-font-weight: bold;"/>
-    </HBox>
+        <!-- Inline banner slot -->
+        <HBox fx:id="bannerBox" styleClass="inline-banner" visible="false" managed="false">
+            <Label fx:id="bannerLabel" styleClass="banner-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+        </HBox>
 
-    <!-- Results area -->
-    <HBox spacing="16" VBox.vgrow="ALWAYS">
-        <VBox spacing="6" HBox.hgrow="ALWAYS">
-            <Label text="Hungarian Algorithm (O(N³))" style="-fx-text-fill: #4ecca3; -fx-font-weight: bold;"/>
-            <TextArea fx:id="taHungarian" editable="false" wrapText="true" prefHeight="240"
-                      style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0; -fx-font-family: monospace;"/>
+        <!-- Input row -->
+        <HBox spacing="12" alignment="CENTER_LEFT"
+              style="-fx-padding: 12 16 8 16; -fx-background-color: #0F001E;">
+            <Label text="Tasks N (50–100):" styleClass="label-dim"/>
+            <TextField fx:id="tfN" promptText="e.g. 75" prefWidth="80"/>
+            <Button text="🎲 RANDOM" onAction="#fillRandom" styleClass="btn-ghost"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblN" text="N = ?" styleClass="mono-label"/>
+            <Label fx:id="lblStatus" text="" styleClass="label-cyan"
+                   style="-fx-font-weight: bold;"/>
+        </HBox>
+
+        <!-- Two algorithm stat cards -->
+        <HBox spacing="12" VBox.vgrow="ALWAYS" style="-fx-padding: 8 16 8 16;">
+
+            <!-- Hungarian card -->
+            <VBox spacing="8" styleClass="stat-card" HBox.hgrow="ALWAYS">
+                <Label text="HUNGARIAN  O(N³)" styleClass="section-title"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <ProgressIndicator fx:id="piHungarian" prefWidth="24" prefHeight="24"
+                                       visible="false" managed="false"/>
+                    <Label fx:id="lblHungarianMs" text="— ms" styleClass="stat-value"
+                           style="-fx-text-fill: #00F5FF;"/>
+                </HBox>
+                <TextArea fx:id="taHungarian" editable="false" wrapText="true"
+                          prefHeight="200" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+            <!-- Branch & Bound card -->
+            <VBox spacing="8" styleClass="stat-card" HBox.hgrow="ALWAYS">
+                <Label text="BRANCH &amp; BOUND" styleClass="section-title"
+                       style="-fx-text-fill: #FF2E88;"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <ProgressIndicator fx:id="piBranchBound" prefWidth="24" prefHeight="24"
+                                       visible="false" managed="false"/>
+                    <Label fx:id="lblBranchBoundMs" text="— ms" styleClass="stat-value"
+                           style="-fx-text-fill: #FF2E88;"/>
+                </HBox>
+                <TextArea fx:id="taBranchBound" editable="false" wrapText="true"
+                          prefHeight="200" VBox.vgrow="ALWAYS"/>
+            </VBox>
+
+        </HBox>
+
+        <!-- New Round button -->
+        <HBox alignment="CENTER" style="-fx-padding: 4 16 12 16;">
+            <Button fx:id="btnNewRound" text="▶ NEW ROUND" onAction="#startNewRound"
+                    styleClass="btn-primary" prefWidth="200" prefHeight="40"/>
+        </HBox>
+
+        <!-- Algorithm timing chart -->
+        <VBox style="-fx-padding: 0 16 12 16;" spacing="4" VBox.vgrow="NEVER">
+            <Label text="Algorithm Timing per Round (ms)" styleClass="label-dim"
+                   style="-fx-font-weight: bold;"/>
+            <BarChart fx:id="timeChart" prefHeight="180" animated="false"
+                      styleClass="chart-dark">
+                <xAxis><CategoryAxis label="Round"/></xAxis>
+                <yAxis><NumberAxis label="Time (ms)"/></yAxis>
+            </BarChart>
         </VBox>
-        <VBox spacing="6" HBox.hgrow="ALWAYS">
-            <Label text="Greedy" style="-fx-text-fill: #f9a826; -fx-font-weight: bold;"/>
-            <TextArea fx:id="taBranchBound" editable="false" wrapText="true" prefHeight="240"
-                      style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0; -fx-font-family: monospace;"/>
-        </VBox>
-    </HBox>
 
-    <!-- Controls -->
-    <HBox alignment="CENTER" spacing="20">
-        <Button fx:id="btnNewRound" text="New Round" onAction="#startNewRound"
-                prefWidth="160" prefHeight="38"
-                style="-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-weight: bold; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;"/>
-    </HBox>
+    </VBox>
 
-    <!-- Algorithm timing chart -->
-    <Label text="Algorithm Timing per Round (ms)" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
-    <BarChart fx:id="timeChart" prefHeight="220" animated="false" VBox.vgrow="NEVER">
-        <xAxis><CategoryAxis label="Round"/></xAxis>
-        <yAxis><NumberAxis label="Time (ms)"/></yAxis>
-    </BarChart>
-</VBox>
+    <!-- Records drawer (off-screen right, shown via controller) -->
+    <VBox fx:id="recordsDrawer" styleClass="records-drawer"
+          StackPane.alignment="CENTER_RIGHT" visible="false">
+        <HBox styleClass="drawer-header" alignment="CENTER_LEFT" spacing="8">
+            <Label text="RECORDS" styleClass="drawer-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="✕" styleClass="btn-ghost"
+                    style="-fx-padding: 1 6 1 6; -fx-font-size: 11px;"
+                    onAction="#closeDrawer"/>
+        </HBox>
+        <TabPane fx:id="recordsTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE"/>
+    </VBox>
+
+</StackPane>

@@ -1,31 +1,515 @@
-/* Shared main menu stylesheet */
-.menu-button {
-    -fx-background-color: #16213e;
-    -fx-text-fill: #e94560;
-    -fx-font-size: 15px;
+/* ================================================================
+   PDSA ARCADE — RETRO SYNTHWAVE DESIGN SYSTEM
+   Fonts: Press Start 2P (display) · VT323 (mono/data) · Outfit (UI)
+   ================================================================ */
+
+/* ===== 1. COLOR TOKENS & ROOT ===== */
+.root {
+    -pd-void:       #0A0014;
+    -pd-surface:    #160032;
+    -pd-surface-hi: #1F0D4A;
+    -pd-magenta:    #FF2E88;
+    -pd-cyan:       #00F5FF;
+    -pd-yellow:     #FFE500;
+    -pd-green:      #39FF14;
+    -pd-red:        #FF3860;
+    -pd-text-hi:    white;
+    -pd-text-mid:   #B8A7E0;
+    -pd-text-lo:    #6A5A9C;
+    -fx-background-color: -pd-void;
+    -fx-font-family: "Outfit";
+    -fx-font-size: 13px;
+}
+
+/* ===== 2. TYPOGRAPHY ===== */
+.display       { -fx-font-family: "Press Start 2P"; -fx-fill: -pd-text-hi; }
+.display-label { -fx-font-family: "Press Start 2P"; -fx-text-fill: -pd-text-hi; }
+.mono          { -fx-font-family: "VT323"; -fx-fill: -pd-text-mid; -fx-font-size: 16px; }
+.mono-label    { -fx-font-family: "VT323"; -fx-text-fill: -pd-text-mid; -fx-font-size: 16px; }
+.ui-caption    { -fx-font-family: "Outfit"; -fx-font-size: 11px; -fx-text-fill: -pd-text-lo; }
+.title-text    {
+    -fx-fill: -pd-magenta;
+    -fx-font-family: "Press Start 2P";
+    -fx-font-size: 14px;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 5, 0.2, 0, 0);
+}
+.section-title {
+    -fx-text-fill: -pd-cyan;
+    -fx-font-family: "Outfit";
     -fx-font-weight: bold;
-    -fx-border-color: #e94560;
-    -fx-border-width: 1.5;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
+    -fx-font-size: 13px;
+}
+.stat-value  { -fx-font-family: "VT323"; -fx-text-fill: -pd-text-hi; -fx-font-size: 28px; }
+.round-badge { -fx-font-family: "VT323"; -fx-text-fill: -pd-yellow; -fx-font-size: 18px; }
+
+/* ===== 3. GAME ROOT ===== */
+.game-root { -fx-background-color: -pd-void; -fx-padding: 0; }
+
+/* ===== 4. TOOLBAR ===== */
+.game-toolbar {
+    -fx-background-color: -pd-surface;
+    -fx-padding: 8 16 8 16;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #FF2E8873;
+    -fx-spacing: 12;
+    -fx-alignment: CENTER_LEFT;
+}
+.game-title-text {
+    -fx-fill: -pd-magenta;
+    -fx-font-family: "Press Start 2P";
+    -fx-font-size: 12px;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 4, 0.15, 0, 0);
+}
+
+/* ===== 5. BUTTONS ===== */
+.btn-primary {
+    -fx-background-color: -pd-magenta;
+    -fx-text-fill: white;
+    -fx-font-family: "Outfit";
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
     -fx-cursor: hand;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-padding: 8 18 8 18;
+}
+.btn-primary:hover {
+    -fx-background-color: derive(-pd-magenta, 15%);
+}
+.btn-primary:pressed {
+    -fx-background-color: derive(-pd-magenta, -15%);
+}
+.btn-primary:disabled { -fx-opacity: 0.35; }
+.btn-primary:focused  { -fx-border-color: white; -fx-border-width: 1.5px; }
+
+.btn-secondary {
+    -fx-background-color: -pd-cyan;
+    -fx-text-fill: -pd-void;
+    -fx-font-family: "Outfit";
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-effect: dropshadow(two-pass-box, #00F5FF, 0, 0, 3, 3);
+    -fx-padding: 8 18 8 18;
+}
+.btn-secondary:hover   { -fx-background-color: derive(-pd-cyan, 10%); -fx-effect: dropshadow(gaussian, #00F5FF, 16, 0.55, 0, 0); }
+.btn-secondary:pressed { -fx-background-color: derive(-pd-cyan, -15%); }
+.btn-secondary:disabled { -fx-opacity: 0.35; }
+.btn-secondary:focused  { -fx-effect: dropshadow(gaussian, #00F5FF, 14, 0.65, 0, 0); }
+
+.btn-ghost {
+    -fx-background-color: transparent;
+    -fx-text-fill: -pd-text-mid;
+    -fx-border-color: -pd-text-lo;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-font-family: "Outfit";
+    -fx-font-size: 12px;
+    -fx-padding: 6 14 6 14;
+}
+.btn-ghost:hover   { -fx-border-color: -pd-text-mid; -fx-text-fill: -pd-text-hi; -fx-background-color: #FFFFFF15; }
+.btn-ghost:pressed { -fx-background-color: #FFFFFF1F; }
+.btn-ghost:focused { -fx-effect: dropshadow(gaussian, #B8A7E0, 8, 0.3, 0, 0); }
+.btn-ghost:disabled { -fx-opacity: 0.35; }
+
+.btn-history {
+    -fx-background-color: transparent;
+    -fx-text-fill: -pd-text-lo;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-font-family: "VT323";
+    -fx-font-size: 15px;
+    -fx-padding: 4 10 4 10;
+}
+.btn-history:selected {
+    -fx-background-color: #FF2E8820;
+    -fx-text-fill: -pd-magenta;
+    -fx-border-color: -pd-magenta;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 8, 0.3, 0, 0);
+}
+.btn-history:hover { -fx-border-color: -pd-text-mid; -fx-text-fill: -pd-text-mid; }
+
+.pill-toggle {
+    -fx-background-color: -pd-surface;
+    -fx-text-fill: -pd-text-mid;
+    -fx-border-color: -pd-text-lo;
+    -fx-cursor: hand;
+    -fx-font-family: "Outfit";
+    -fx-font-size: 12px;
+    -fx-padding: 5 14 5 14;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+}
+.pill-toggle:selected { -fx-background-color: -pd-magenta; -fx-text-fill: white; -fx-border-color: -pd-magenta; }
+.pill-toggle:hover    { -fx-border-color: -pd-text-mid; }
+.pill-first { -fx-background-radius: 20 0 0 20; -fx-border-radius: 20 0 0 20; }
+.pill-last  { -fx-background-radius: 0 20 20 0; -fx-border-radius: 0 20 20 0; }
+
+/* Choice buttons for Game 2 quiz */
+.choice-btn {
+    -fx-background-color: -pd-surface-hi;
+    -fx-text-fill: -pd-text-mid;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-font-family: "VT323";
+    -fx-font-size: 22px;
+    -fx-pref-width: 80px;
+    -fx-effect: dropshadow(two-pass-box, #6A5A9C, 0, 0, 2, 2);
+}
+.choice-btn:hover  { -fx-background-color: #FF2E8825; -fx-border-color: -pd-magenta; -fx-text-fill: -pd-text-hi; }
+.choice-btn:focused { -fx-border-color: -pd-cyan; }
+
+/* ===== 6. INPUTS ===== */
+.text-field {
+    -fx-background-color: -pd-surface-hi;
+    -fx-text-fill: -pd-text-hi;
+    -fx-prompt-text-fill: -pd-text-lo;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-font-family: "Outfit";
+    -fx-font-size: 13px;
+    -fx-padding: 6 10 6 10;
+}
+.text-field:focused { -fx-border-color: -pd-cyan; -fx-effect: dropshadow(gaussian, #00F5FF, 8, 0.3, 0, 0); }
+
+.text-area {
+    -fx-background-color: -pd-surface-hi;
+    -fx-text-fill: -pd-text-hi;
+    -fx-font-family: "VT323";
+    -fx-font-size: 15px;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+.text-area .content { -fx-background-color: -pd-surface-hi; }
+.text-area:focused  { -fx-border-color: -pd-cyan; }
+
+.spinner .text-field  { -fx-background-color: -pd-surface-hi; -fx-text-fill: -pd-text-hi; -fx-border-color: #6A5A9C; -fx-font-family: "Outfit"; }
+.spinner .increment-arrow-button, .spinner .decrement-arrow-button { -fx-background-color: -pd-surface; -fx-border-color: #6A5A9C; }
+.spinner .increment-arrow-button:hover, .spinner .decrement-arrow-button:hover { -fx-background-color: -pd-surface-hi; }
+.spinner .increment-arrow, .spinner .decrement-arrow { -fx-background-color: -pd-text-mid; }
+
+.radio-button { -fx-text-fill: -pd-text-mid; -fx-font-family: "Outfit"; -fx-font-size: 13px; }
+.radio-button:selected { -fx-text-fill: -pd-text-hi; }
+.radio-button .radio {
+    -fx-border-color: #6A5A9C;
+    -fx-background-color: -pd-surface-hi;
+    -fx-border-radius: 100%;
+    -fx-background-radius: 100%;
+    -fx-padding: 3px;
+}
+.radio-button:selected .radio { -fx-border-color: -pd-magenta; }
+.radio-button:selected .dot   { -fx-background-color: -pd-magenta; -fx-background-radius: 100%; }
+
+.toggle-button {
+    -fx-background-color: -pd-surface;
+    -fx-text-fill: -pd-text-mid;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-font-family: "Outfit";
+    -fx-font-size: 12px;
+    -fx-padding: 5 12 5 12;
+}
+.toggle-button:selected {
+    -fx-background-color: -pd-magenta;
+    -fx-text-fill: white;
+    -fx-border-color: -pd-magenta;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 8, 0.4, 0, 0);
+}
+.toggle-button:hover  { -fx-border-color: -pd-text-mid; }
+.toggle-button:focused { -fx-effect: dropshadow(gaussian, #B8A7E0, 6, 0.3, 0, 0); }
+
+/* ===== 7. PANELS / CARDS ===== */
+.neon-panel {
+    -fx-background-color: -pd-surface;
+    -fx-border-color: #FF2E8873;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-border-width: 1.5px;
+    -fx-padding: 12;
+}
+.stat-card {
+    -fx-background-color: -pd-surface;
+    -fx-border-color: #00F5FF40;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-border-width: 1px;
+    -fx-padding: 12;
+}
+.stat-card.winner {
+    -fx-border-color: -pd-yellow;
+    -fx-effect: dropshadow(gaussian, #FFE500, 10, 0.35, 0, 0);
+}
+.info-panel {
+    -fx-background-color: -pd-surface;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-border-width: 1px;
+    -fx-padding: 8 12 8 12;
+}
+.board-wrapper {
+    -fx-background-color: -pd-surface;
+    -fx-border-color: #00F5FF40;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-border-width: 1px;
+    -fx-padding: 4;
+}
+
+/* ===== 8. MAIN MENU ===== */
+.menu-button {
+    -fx-background-color: -pd-surface;
+    -fx-text-fill: -pd-text-hi;
+    -fx-font-family: "Outfit";
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-border-color: #FF2E8873;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-border-width: 1.5px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(two-pass-box, #FF2E88, 0, 0, 3, 3);
 }
 .menu-button:hover {
-    -fx-background-color: #e94560;
-    -fx-text-fill: #ffffff;
+    -fx-background-color: -pd-magenta;
+    -fx-text-fill: white;
+    -fx-border-color: -pd-magenta;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 18, 0.5, 0, 0);
 }
+.menu-button:pressed { -fx-background-color: derive(-pd-magenta, -10%); }
+.menu-button:focused { -fx-effect: dropshadow(gaussian, #FF2E88, 14, 0.6, 0, 0); }
+
 .records-button {
-    -fx-background-color: #0f3460;
-    -fx-text-fill: #a8a8b3;
-    -fx-font-size: 12px;
-    -fx-font-weight: bold;
-    -fx-border-color: #a8a8b3;
-    -fx-border-width: 1;
-    -fx-border-radius: 6;
-    -fx-background-radius: 6;
+    -fx-background-color: -pd-surface;
+    -fx-text-fill: -pd-text-lo;
+    -fx-font-family: "VT323";
+    -fx-font-size: 14px;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
     -fx-cursor: hand;
 }
-.records-button:hover {
-    -fx-background-color: #a8a8b3;
-    -fx-text-fill: #1a1a2e;
+.records-button:hover { -fx-background-color: #00F5FF15; -fx-text-fill: -pd-cyan; -fx-border-color: -pd-cyan; }
+
+.game-tile {
+    -fx-background-color: -pd-surface;
+    -fx-border-color: #FF2E8873;
+    -fx-border-width: 1.5px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(two-pass-box, #FF2E88, 0, 0, 3, 3);
+    -fx-padding: 16px;
+    -fx-cursor: hand;
+}
+.game-tile:hover {
+    -fx-background-color: -pd-surface-hi;
+    -fx-border-color: -pd-magenta;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 18, 0.45, 0, 0);
+}
+.game-tile-number { -fx-font-family: "VT323"; -fx-font-size: 18px; -fx-text-fill: -pd-text-lo; }
+.game-tile-title  { -fx-font-family: "Press Start 2P"; -fx-font-size: 10px; -fx-text-fill: -pd-text-hi; -fx-wrap-text: true; }
+.game-tile-desc   { -fx-font-family: "Outfit"; -fx-font-size: 13px; -fx-text-fill: -pd-text-lo; -fx-wrap-text: true; }
+.footer-text      { -fx-font-family: "VT323"; -fx-text-fill: -pd-text-lo; -fx-font-size: 14px; }
+.marquee-title {
+    -fx-font-family: "Press Start 2P";
+    -fx-font-size: 22px;
+    -fx-fill: -pd-magenta;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 8, 0.25, 0, 0);
+}
+.marquee-sub  { -fx-font-family: "VT323"; -fx-font-size: 18px; -fx-fill: -pd-text-lo; }
+
+/* ===== 9. INLINE BANNER ===== */
+.inline-banner {
+    -fx-padding: 8 12 8 12;
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+    -fx-background-radius: 0 4px 4px 0;
+    -fx-border-radius: 0 4px 4px 0;
+}
+.inline-banner.error { -fx-background-color: #FF386018; -fx-border-color: -pd-red;    -fx-border-width: 0 0 0 3px; }
+.inline-banner.warn  { -fx-background-color: #FFE50018; -fx-border-color: -pd-yellow; -fx-border-width: 0 0 0 3px; }
+.inline-banner.info  { -fx-background-color: #00F5FF18; -fx-border-color: -pd-cyan;   -fx-border-width: 0 0 0 3px; }
+.banner-label { -fx-font-family: "Outfit"; -fx-font-size: 12px; -fx-wrap-text: true; }
+.banner-label.error { -fx-text-fill: -pd-red; }
+.banner-label.warn  { -fx-text-fill: -pd-yellow; }
+.banner-label.info  { -fx-text-fill: -pd-cyan; }
+
+/* ===== 10. RESULT LABELS ===== */
+.result-win  { -fx-text-fill: -pd-green; -fx-font-weight: bold; -fx-font-size: 14px; -fx-effect: dropshadow(gaussian, #39FF14, 4, 0.15, 0, 0); }
+.result-draw { -fx-text-fill: -pd-yellow; -fx-font-weight: bold; -fx-font-size: 14px; }
+.result-lose { -fx-text-fill: -pd-red; -fx-font-weight: bold; -fx-font-size: 14px; }
+
+/* ===== 11. RECORDS DRAWER ===== */
+.records-drawer {
+    -fx-background-color: -pd-surface;
+    -fx-border-color: #FF2E8873;
+    -fx-border-width: 0 0 0 1.5px;
+    -fx-effect: dropshadow(two-pass-box, #FF2E88, 0, 0, -5, 0);
+    -fx-pref-width: 300px;
+    -fx-max-width: 300px;
+    -fx-min-width: 300px;
+}
+.drawer-header {
+    -fx-background-color: -pd-surface-hi;
+    -fx-padding: 10 12 10 12;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #FF2E8873;
+}
+.drawer-title {
+    -fx-font-family: "Press Start 2P";
+    -fx-font-size: 8px;
+    -fx-text-fill: -pd-magenta;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 3, 0.15, 0, 0);
+}
+
+/* ===== 12. PROGRESS INDICATORS ===== */
+.progress-indicator { -fx-accent: -pd-cyan; -fx-progress-color: -pd-cyan; }
+.progress-bar .track {
+    -fx-background-color: -pd-surface;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 2px;
+    -fx-background-radius: 2px;
+    -fx-padding: 2px;
+}
+.progress-bar .bar {
+    -fx-background-color: linear-gradient(to right, -pd-cyan, -pd-magenta);
+    -fx-background-radius: 2px;
+    -fx-padding: 5px;
+}
+.progress-scan .track {
+    -fx-background-color: -pd-surface;
+    -fx-border-color: -pd-text-lo;
+    -fx-border-radius: 3px;
+    -fx-background-radius: 3px;
+    -fx-padding: 2px;
+}
+.progress-scan .bar {
+    -fx-background-color: linear-gradient(to right, transparent, -pd-cyan 30%, -pd-magenta 70%, transparent);
+    -fx-background-radius: 3px;
+    -fx-padding: 6px;
+}
+
+/* ===== 13. CHARTS ===== */
+.chart-dark { -fx-background-color: transparent; -fx-padding: 0; }
+.chart-dark .chart-plot-background          { -fx-background-color: #0F001E; }
+.chart-dark .chart-vertical-grid-lines      { -fx-stroke: #1F0D4A; }
+.chart-dark .chart-horizontal-grid-lines    { -fx-stroke: #1F0D4A; }
+.chart-dark .chart-vertical-zero-line       { -fx-stroke: -pd-text-lo; }
+.chart-dark .chart-horizontal-zero-line     { -fx-stroke: -pd-text-lo; }
+.chart-dark .axis                           { -fx-tick-label-fill: -pd-text-mid; -fx-tick-label-font: 12px "VT323"; }
+.chart-dark .axis-label                     { -fx-fill: -pd-text-lo; -fx-font-size: 11px; -fx-font-family: "Outfit"; }
+.chart-dark .chart-legend                   { -fx-background-color: -pd-surface; -fx-padding: 4 8; }
+.chart-dark .chart-legend-item              { -fx-text-fill: -pd-text-mid; -fx-font-family: "Outfit"; -fx-font-size: 11px; }
+.chart-dark .default-color0.chart-bar .bar {
+    -fx-background-color: #00F5FF;
+    -fx-background-radius: 2px 2px 0 0;
+    -fx-effect: dropshadow(gaussian, #00F5FF, 4, 0.3, 0, 0);
+}
+.chart-dark .default-color1.chart-bar .bar {
+    -fx-background-color: #FF2E88;
+    -fx-background-radius: 2px 2px 0 0;
+    -fx-effect: dropshadow(gaussian, #FF2E88, 4, 0.3, 0, 0);
+}
+
+/* ===== 14. SCROLL BARS ===== */
+.scroll-bar                                 { -fx-background-color: -pd-surface; }
+.scroll-bar .thumb                          { -fx-background-color: -pd-surface-hi; -fx-background-radius: 4px; }
+.scroll-bar .thumb:hover                    { -fx-background-color: -pd-text-lo; }
+.scroll-bar .track                          { -fx-background-color: -pd-surface; }
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button               { -fx-background-color: -pd-surface; }
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow                { -fx-background-color: -pd-text-lo; -fx-pref-height: 6px; }
+.scroll-pane                                { -fx-background-color: -pd-surface; -fx-border-color: transparent; }
+.scroll-pane > .viewport                    { -fx-background-color: transparent; }
+.scroll-pane > .corner                      { -fx-background-color: -pd-surface; }
+
+/* ===== 15. TABLES ===== */
+.table-view {
+    -fx-background-color: -pd-surface;
+    -fx-table-cell-border-color: #1F0D4A;
+    -fx-border-color: #FF2E8840;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+.table-view .column-header,
+.table-view .column-header-background,
+.table-view .filler                         { -fx-background-color: -pd-surface-hi; -fx-border-color: transparent; }
+.table-view .column-header .label          { -fx-text-fill: -pd-cyan; -fx-font-family: "Outfit"; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 6; }
+.table-row-cell                             { -fx-background-color: -pd-surface; -fx-text-fill: -pd-text-mid; -fx-border-color: transparent transparent #1F0D4A transparent; -fx-border-width: 0 0 1 0; }
+.table-row-cell:odd                         { -fx-background-color: #1A004A; }
+.table-row-cell:selected,
+.table-row-cell:focused:selected            { -fx-background-color: #FF2E8830; -fx-text-fill: -pd-text-hi; }
+.table-cell                                 { -fx-font-family: "Outfit"; -fx-font-size: 12px; -fx-text-fill: inherit; -fx-padding: 4 8; }
+.table-view .placeholder .label            { -fx-text-fill: -pd-text-lo; -fx-font-style: italic; }
+
+/* ===== 16. TABS ===== */
+.tab-pane .tab-header-area .tab-header-background { -fx-background-color: -pd-surface-hi; }
+.tab-pane .tab                              { -fx-background-color: -pd-surface; -fx-background-radius: 4px 4px 0 0; }
+.tab-pane .tab:selected                     { -fx-background-color: -pd-surface-hi; }
+.tab-pane .tab .tab-label                   { -fx-text-fill: -pd-text-lo; -fx-font-family: "Outfit"; -fx-font-size: 12px; }
+.tab-pane .tab:selected .tab-label          { -fx-text-fill: -pd-cyan; -fx-font-weight: bold; }
+.tab-content-area                           { -fx-background-color: -pd-surface; }
+.tab-pane:focused .tab:selected             { -fx-effect: dropshadow(gaussian, #00F5FF, 6, 0.4, 0, 0); }
+
+/* ===== 17. DIALOG PANE ===== */
+.dialog-pane                                { -fx-background-color: -pd-surface; -fx-border-color: #FF2E8873; -fx-border-radius: 6px; }
+.dialog-pane .header-panel                  { -fx-background-color: -pd-surface-hi; }
+.dialog-pane .header-panel .label          { -fx-text-fill: -pd-magenta; -fx-font-family: "Outfit"; -fx-font-weight: bold; }
+.dialog-pane .content.label,
+.dialog-pane .content                       { -fx-text-fill: -pd-text-mid; -fx-font-family: "Outfit"; -fx-background-color: -pd-surface; }
+.dialog-pane > .button-bar > .container    { -fx-background-color: -pd-surface; }
+.dialog-pane .button                        { -fx-background-color: -pd-magenta; -fx-text-fill: white; -fx-font-family: "Outfit"; -fx-background-radius: 4px; -fx-cursor: hand; }
+.dialog-pane .button:hover                  { -fx-background-color: derive(-pd-magenta, 15%); }
+
+/* ===== 18. SEPARATOR ===== */
+.separator .line { -fx-border-color: #1F0D4A; -fx-border-width: 1px; }
+
+/* ===== 19. LABEL DEFAULTS ===== */
+Label { -fx-text-fill: -pd-text-mid; -fx-font-family: "Outfit"; }
+Text  { -fx-fill: -pd-text-mid; }
+.label-hi    { -fx-text-fill: -pd-text-hi; }
+.label-dim   { -fx-text-fill: -pd-text-lo; }
+.label-cyan  { -fx-text-fill: -pd-cyan; }
+.label-amber { -fx-text-fill: -pd-yellow; }
+.label-green { -fx-text-fill: -pd-green; }
+.label-red   { -fx-text-fill: -pd-red; }
+.label-mag   { -fx-text-fill: -pd-magenta; }
+
+/* ===== 20. STEPPER (Game 5) ===== */
+.step-pill {
+    -fx-background-color: -pd-surface;
+    -fx-text-fill: -pd-text-lo;
+    -fx-border-color: #6A5A9C;
+    -fx-border-radius: 20px;
+    -fx-background-radius: 20px;
+    -fx-border-width: 1.5px;
+    -fx-font-family: "VT323";
+    -fx-font-size: 14px;
+    -fx-padding: 4 12 4 12;
+}
+.step-pill.active { -fx-background-color: #00F5FF20; -fx-text-fill: -pd-cyan; -fx-border-color: -pd-cyan; -fx-effect: dropshadow(gaussian, #00F5FF, 8, 0.35, 0, 0); }
+.step-pill.done   { -fx-background-color: #39FF1420; -fx-text-fill: -pd-green; -fx-border-color: -pd-green; }
+.step-connector   { -fx-background-color: -pd-text-lo; -fx-pref-height: 1px; -fx-pref-width: 30px; }
+
+/* ===== 21. SOLUTION OVERLAY (Game 5) ===== */
+.solution-overlay {
+    -fx-background-color: rgba(10, 0, 20, 0.88);
+    -fx-border-color: -pd-yellow;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-border-width: 1.5px;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, #FFE500, 20, 0.4, 0, 0);
 }

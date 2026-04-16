@@ -1,6 +1,7 @@
 package com.pdsa.game1.ui;
 
 import com.pdsa.game1.db.Game1DB;
+import com.pdsa.util.Theme;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,19 +23,23 @@ public class Game1RecordsView {
         );
         populate(table, Game1DB.getRecentRounds(100));
 
-        Label info = new Label("Showing last 100 rounds  |  Minimum Cost (Assignment Problem)");
-        info.setStyle("-fx-text-fill: #a8a8b3; -fx-font-size: 11; -fx-padding: 6 8;");
+        Label info = new Label("Last 100 rounds  ·  Minimum Cost (Assignment Problem)");
+        info.getStyleClass().add("ui-caption");
+        info.setStyle("-fx-padding: 8 12;");
 
         VBox root = new VBox(4, info, table);
-        root.setStyle("-fx-background-color: #1a1a2e;");
+        root.getStyleClass().add("game-root");
         VBox.setVgrow(table, javafx.scene.layout.Priority.ALWAYS);
-        stage.setScene(new Scene(root, 760, 460));
+
+        Scene scene = new Scene(root, 800, 480);
+        Theme.apply(stage, scene);
+        stage.setScene(scene);
+        stage.setResizable(true);
         stage.show();
     }
 
     private TableView<ObservableList<String>> buildTable(String... headers) {
         TableView<ObservableList<String>> table = new TableView<>();
-        table.setStyle("-fx-background-color: #16213e;");
         for (int i = 0; i < headers.length; i++) {
             final int col = i;
             TableColumn<ObservableList<String>, String> tc = new TableColumn<>(headers[i]);
@@ -46,11 +51,9 @@ public class Game1RecordsView {
     }
 
     private void populate(TableView<ObservableList<String>> table, List<String[]> rows) {
-        for (String[] row : rows) {
+        for (String[] row : rows)
             table.getItems().add(FXCollections.observableArrayList(row));
-        }
-        if (rows.isEmpty()) {
+        if (rows.isEmpty())
             table.setPlaceholder(new Label("No records yet — play a round first."));
-        }
     }
 }

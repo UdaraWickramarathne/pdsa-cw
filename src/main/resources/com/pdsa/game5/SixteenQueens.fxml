@@ -6,70 +6,143 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.chart.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.pdsa.game5.ui.SixteenQueensController"
-      style="-fx-background-color: #1a1a2e;">
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.pdsa.game5.ui.SixteenQueensController">
 
-    <!-- Main content: board + controls side by side -->
-    <HBox spacing="16" style="-fx-padding: 16;" VBox.vgrow="ALWAYS">
+    <VBox styleClass="game-root">
 
-        <!-- Left: chessboard -->
-        <VBox spacing="8" minWidth="420">
-            <Text text="Sixteen Queens Puzzle" style="-fx-fill: #e94560; -fx-font-size: 22; -fx-font-weight: bold;"/>
-            <Canvas fx:id="boardCanvas" width="400" height="400"
-                    style="-fx-cursor: hand;"/>
-            <Label text="Click a cell to place a queen. Click the same queen again to remove it."
-                   style="-fx-text-fill: #a8a8b3; -fx-font-size: 11;" wrapText="true"/>
+        <!-- Toolbar -->
+        <HBox styleClass="game-toolbar">
+            <Text text="♛ SIXTEEN QUEENS" styleClass="game-title-text"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lblClaimedBadge"  text="CLAIMED: 0"   styleClass="round-badge"
+                   style="-fx-text-fill: #39FF14;"/>
+            <Region style="-fx-pref-width: 8;"/>
+            <Label fx:id="lblUnclaimedBadge" text="LEFT: —"      styleClass="round-badge"
+                   style="-fx-text-fill: #FFE500;"/>
+            <Region style="-fx-pref-width: 12;"/>
+            <ToggleButton fx:id="btnHistory" text="⏶ HISTORY" styleClass="btn-history"
+                          onAction="#toggleHistory"/>
+        </HBox>
+
+        <!-- Inline banner -->
+        <HBox fx:id="bannerBox" styleClass="inline-banner" visible="false" managed="false">
+            <Label fx:id="bannerLabel" styleClass="banner-label" wrapText="true" HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <!-- Stepper pills -->
+        <HBox spacing="0" style="-fx-padding: 8 16 4 16;" alignment="CENTER_LEFT">
+            <Label fx:id="stepPill1" text="① PRECOMPUTE" styleClass="step-pill"/>
+            <Label text="──" styleClass="step-connector"/>
+            <Label fx:id="stepPill2" text="② PLACE QUEENS" styleClass="step-pill"/>
+            <Label text="──" styleClass="step-connector"/>
+            <Label fx:id="stepPill3" text="③ SUBMIT" styleClass="step-pill"/>
+        </HBox>
+
+        <!-- Board + controls -->
+        <HBox spacing="0" VBox.vgrow="ALWAYS">
+
+            <!-- Board column -->
+            <VBox spacing="8" style="-fx-padding: 12 8 12 16;" minWidth="600">
+                <Label text="Click a cell to place ♛. Click again to remove."
+                       styleClass="ui-caption"/>
+                <VBox styleClass="board-wrapper">
+                    <Canvas fx:id="boardCanvas" width="560" height="560"
+                            style="-fx-cursor: hand;"/>
+                </VBox>
+
+                <!-- Sample solution overlay (hidden by default) -->
+                <VBox fx:id="solutionOverlay" styleClass="solution-overlay"
+                      visible="false" managed="false" spacing="8">
+                    <Label text="SAMPLE SOLUTION" styleClass="section-title"/>
+                    <Label text="This is just an example — your attempt will be reset."
+                           styleClass="ui-caption" wrapText="true"/>
+                    <Button text="✕ DISMISS" onAction="#dismissSampleSolution"
+                            styleClass="btn-ghost" prefWidth="140"/>
+                </VBox>
+            </VBox>
+
+            <!-- Separator -->
+            <Separator orientation="VERTICAL" style="-fx-padding: 0 4;"/>
+
+            <!-- Controls column -->
+            <VBox spacing="10" HBox.hgrow="ALWAYS" style="-fx-padding: 12 16 12 8;">
+
+                <!-- Precompute card -->
+                <VBox styleClass="stat-card" spacing="8">
+                    <Label text="PRECOMPUTE" styleClass="section-title"/>
+                    <Label text="Run the solvers once to populate all valid solutions."
+                           styleClass="label-dim" wrapText="true"/>
+                    <ProgressBar fx:id="pbPrecompute" progress="-1" prefWidth="200"
+                                 styleClass="progress-scan" visible="false" managed="false"/>
+                    <Label fx:id="lblStatus" text="Not yet run." styleClass="label-dim" wrapText="true"/>
+                    <Button fx:id="btnPrecompute" text="▶ PRECOMPUTE" onAction="#precompute"
+                            styleClass="btn-primary" prefWidth="160"/>
+                </VBox>
+
+                <!-- Timing card -->
+                <VBox styleClass="stat-card" spacing="6">
+                    <Label text="ALGORITHM TIMINGS" styleClass="section-title"/>
+                    <HBox spacing="12">
+                        <VBox spacing="2" HBox.hgrow="ALWAYS">
+                            <Label text="Sequential" styleClass="label-dim"/>
+                            <Label fx:id="lblSeqMs" text="—" styleClass="label-cyan"/>
+                        </VBox>
+                        <VBox spacing="2" HBox.hgrow="ALWAYS">
+                            <Label text="Threaded" styleClass="label-dim"/>
+                            <Label fx:id="lblThrMs" text="—" styleClass="label-amber"/>
+                        </VBox>
+                        <VBox spacing="2" HBox.hgrow="ALWAYS">
+                            <Label text="Solutions" styleClass="label-dim"/>
+                            <Label fx:id="lblSolutions" text="—" styleClass="label-dim"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+
+                <!-- Submit card -->
+                <VBox styleClass="neon-panel" spacing="8" VBox.vgrow="ALWAYS">
+                    <Label text="SUBMIT YOUR SOLUTION" styleClass="section-title"/>
+                    <Label text="Your name:" styleClass="label-dim"/>
+                    <TextField fx:id="tfPlayerName" promptText="Enter your name"/>
+                    <HBox spacing="8">
+                        <Button text="✕ CLEAR" onAction="#clearUserBoard"
+                                styleClass="btn-ghost" prefWidth="90"/>
+                        <Button fx:id="btnSubmit" text="✓ SUBMIT" onAction="#submitAnswer"
+                                styleClass="btn-secondary" prefWidth="110"/>
+                    </HBox>
+                    <Button fx:id="btnViewSample" text="👁 VIEW SAMPLE SOLUTION"
+                            onAction="#showSampleSolution" styleClass="btn-ghost" prefWidth="210"/>
+                    <Label fx:id="lblResult" text="" wrapText="true"
+                           style="-fx-font-size: 13px; -fx-font-weight: bold;"/>
+                </VBox>
+
+            </VBox>
+        </HBox>
+
+        <!-- Chart -->
+        <VBox style="-fx-padding: 0 16 12 16;" spacing="4" VBox.vgrow="NEVER">
+            <Label text="Sequential vs Threaded Timing per Run (ms)" styleClass="label-dim"
+                   style="-fx-font-weight: bold;"/>
+            <BarChart fx:id="timeChart" prefHeight="180" animated="false"
+                      styleClass="chart-dark">
+                <xAxis><CategoryAxis label="Run"/></xAxis>
+                <yAxis><NumberAxis label="Time (ms)"/></yAxis>
+            </BarChart>
         </VBox>
 
-        <!-- Right: controls -->
-        <VBox spacing="10" HBox.hgrow="ALWAYS">
-            <Text text="Controls" style="-fx-fill: #4ecca3; -fx-font-size: 16; -fx-font-weight: bold;"/>
-
-            <!-- Timing info -->
-            <Label fx:id="lblTiming" text="Timing: not yet computed."
-                   style="-fx-text-fill: #f9a826;" wrapText="true"/>
-            <Label fx:id="lblUnclaimed" text="Unclaimed: —"
-                   style="-fx-text-fill: #a8a8b3;"/>
-
-            <Separator/>
-
-            <!-- Precompute -->
-            <Label text="Step 1 — Precompute all solutions (run once):"
-                   style="-fx-text-fill: #a8a8b3; -fx-font-size: 11;"/>
-            <Button fx:id="btnPrecompute" text="Precompute All Solutions" onAction="#precompute"
-                    prefWidth="220"
-                    style="-fx-background-color: #555577; -fx-text-fill: white; -fx-cursor: hand;"/>
-            <Label fx:id="lblStatus" text="Check DB status above." style="-fx-text-fill: #a8a8b3;" wrapText="true"/>
-
-            <Separator/>
-
-            <!-- Player input -->
-            <Label text="Step 2 — Place queens on the board, then submit:"
-                   style="-fx-text-fill: #a8a8b3; -fx-font-size: 11;"/>
-
-            <Label text="Your Name:" style="-fx-text-fill: #a8a8b3;"/>
-            <TextField fx:id="tfPlayerName" promptText="Enter your name"
-                       style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0;"/>
-
-            <HBox spacing="10">
-                <Button text="Clear Board" onAction="#clearUserBoard"
-                        style="-fx-background-color: #555577; -fx-text-fill: white; -fx-cursor: hand;"/>
-                <Button fx:id="btnSubmit" text="Submit Answer" onAction="#submitAnswer"
-                        style="-fx-background-color: #4ecca3; -fx-text-fill: #1a1a2e; -fx-font-weight: bold; -fx-cursor: hand;"/>
-            </HBox>
-
-            <Label fx:id="lblResult" text="" wrapText="true"
-                   style="-fx-font-size: 13; -fx-font-weight: bold;"/>
-        </VBox>
-    </HBox>
-
-    <!-- Algorithm timing chart -->
-    <VBox style="-fx-padding: 0 16 12 16;" spacing="4">
-        <Label text="Sequential vs Threaded Timing per Precompute Run (ms)" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
-        <BarChart fx:id="timeChart" prefHeight="200" animated="false">
-            <xAxis><CategoryAxis label="Run"/></xAxis>
-            <yAxis><NumberAxis label="Time (ms)"/></yAxis>
-        </BarChart>
     </VBox>
-</VBox>
+
+    <!-- Records drawer -->
+    <VBox fx:id="recordsDrawer" styleClass="records-drawer"
+          StackPane.alignment="CENTER_RIGHT" visible="false">
+        <HBox styleClass="drawer-header" alignment="CENTER_LEFT" spacing="8">
+            <Label text="RECORDS" styleClass="drawer-title"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button text="✕" styleClass="btn-ghost"
+                    style="-fx-padding: 1 6 1 6; -fx-font-size: 11px;"
+                    onAction="#closeDrawer"/>
+        </HBox>
+        <TabPane fx:id="recordsTabPane" VBox.vgrow="ALWAYS" tabClosingPolicy="UNAVAILABLE"/>
+    </VBox>
+
+</StackPane>

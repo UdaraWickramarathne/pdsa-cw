@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -fsSL -o \"Outfit-Regular.ttf\" \"https://github.com/google/fonts/raw/main/ofl/outfit/static/Outfit-Regular.ttf\")",
+      "Bash(curl -fsSL -o \"Outfit-Medium.ttf\" \"https://github.com/google/fonts/raw/main/ofl/outfit/static/Outfit-Medium.ttf\")",
+      "Bash(curl -fsSL -o \"Outfit-Bold.ttf\" \"https://github.com/google/fonts/raw/main/ofl/outfit/static/Outfit-Bold.ttf\")"
+    ]
+  }
+}

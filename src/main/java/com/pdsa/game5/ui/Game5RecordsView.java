@@ -1,6 +1,7 @@
 package com.pdsa.game5.ui;
 
 import com.pdsa.game5.db.Game5DB;
+import com.pdsa.util.Theme;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -36,15 +37,17 @@ public class Game5RecordsView {
         );
 
         VBox root = new VBox(tabPane);
-        root.setStyle("-fx-background-color: #1a1a2e;");
+        root.getStyleClass().add("game-root");
         VBox.setVgrow(tabPane, javafx.scene.layout.Priority.ALWAYS);
-        stage.setScene(new Scene(root, 680, 460));
+        Scene scene = new Scene(root, 680, 460);
+        Theme.apply(stage, scene);
+        stage.setScene(scene);
+        stage.setResizable(true);
         stage.show();
     }
 
     private TableView<ObservableList<String>> buildTable(String... headers) {
         TableView<ObservableList<String>> table = new TableView<>();
-        table.setStyle("-fx-background-color: #16213e;");
         for (int i = 0; i < headers.length; i++) {
             final int col = i;
             TableColumn<ObservableList<String>, String> tc = new TableColumn<>(headers[i]);

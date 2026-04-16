@@ -1,13 +1,10 @@
 package com.pdsa.game2;
 
+import com.pdsa.util.Theme;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- * Entry point for Game 2 — Snake and Ladder.
- * Called from the main menu. Opens in its own Stage.
- */
 public class SnakeLadderApp {
 
     public void show() {
@@ -17,8 +14,12 @@ public class SnakeLadderApp {
             );
             Stage stage = new Stage();
             stage.setTitle("Game 2 — Snake and Ladder");
-            stage.setScene(new Scene(loader.load(), 900, 860));
-            stage.setResizable(false);
+            Scene scene = new Scene(loader.load(), 1100, 960);
+            Theme.apply(stage, scene);
+            stage.setScene(scene);
+            stage.setResizable(true);
+            stage.setMinWidth(1000);
+            stage.setMinHeight(860);
             stage.show();
         } catch (Exception e) {
             throw new RuntimeException("Could not load Snake & Ladder game: " + e.getMessage(), e);
