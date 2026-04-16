@@ -7,6 +7,8 @@ import com.pdsa.game3.model.FlowGraph;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -35,13 +37,21 @@ public class TrafficController {
     @FXML private Button btnSubmit;
     @FXML private Label lblResult;
     @FXML private Label lblRoundInfo;
+    @FXML private BarChart<String, Number> timeChart;
 
     private FlowGraph graph;
     private int correctMaxFlow;
     private int currentRoundId = -1;
 
+    private final XYChart.Series<String, Number> seriesFF = new XYChart.Series<>();
+    private final XYChart.Series<String, Number> seriesEK = new XYChart.Series<>();
+    private int roundCount = 0;
+
     @FXML
     public void initialize() {
+        seriesFF.setName("Ford-Fulkerson");
+        seriesEK.setName("Edmonds-Karp");
+        timeChart.getData().addAll(seriesFF, seriesEK);
         startNewRound();
     }
 
@@ -71,6 +81,10 @@ public class TrafficController {
         tfAnswer.clear();
         btnSubmit.setDisable(false);
         drawGraph();
+
+        String label = "R" + (++roundCount);
+        seriesFF.getData().add(new XYChart.Data<>(label, ffMs));
+        seriesEK.getData().add(new XYChart.Data<>(label, ekMs));
     }
 
     @FXML

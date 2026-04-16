@@ -1,6 +1,8 @@
 package com.pdsa.game3.db;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Database access layer for Game 3 (Traffic Simulation).
@@ -44,5 +46,55 @@ public class Game3DB {
         } catch (SQLException e) {
             System.err.println("[Game3DB] saveWinner error: " + e.getMessage());
         }
+    }
+
+    /** Returns up to {@code limit} recent rounds, newest first, as String arrays for display. */
+    public static List<String[]> getRecentRounds(int limit) {
+        List<String[]> rows = new ArrayList<>();
+        String sql = "SELECT round_id, max_flow, ford_fulkerson_ms, edmonds_karp_ms, played_at " +
+                     "FROM game3_rounds ORDER BY round_id DESC LIMIT ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    rows.add(new String[]{
+                        String.valueOf(rs.getInt("round_id")),
+                        String.valueOf(rs.getInt("max_flow")),
+                        String.valueOf(rs.getLong("ford_fulkerson_ms")),
+                        String.valueOf(rs.getLong("edmonds_karp_ms")),
+                        rs.getString("played_at")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[Game3DB] getRecentRounds error: " + e.getMessage());
+        }
+        return rows;
+    }
+
+    /** Returns up to {@code limit} recent winners, newest first, as String arrays for display. */
+    public static List<String[]> getRecentWinners(int limit) {
+        List<String[]> rows = new ArrayList<>();
+        String sql = "SELECT id, round_id, player_name, answer, won_at " +
+                     "FROM game3_winners ORDER BY id DESC LIMIT ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    rows.add(new String[]{
+                        String.valueOf(rs.getInt("id")),
+                        String.valueOf(rs.getInt("round_id")),
+                        rs.getString("player_name"),
+                        String.valueOf(rs.getInt("answer")),
+                        rs.getString("won_at")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[Game3DB] getRecentWinners error: " + e.getMessage());
+        }
+        return rows;
     }
 }

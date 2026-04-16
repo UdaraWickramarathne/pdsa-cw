@@ -17,7 +17,7 @@ public class KnightsTourApp {
             );
             Stage stage = new Stage();
             stage.setTitle("Game 4 — Knight's Tour");
-            stage.setScene(new Scene(loader.load(), 900, 620));
+            stage.setScene(new Scene(loader.load(), 900, 900));
             stage.setResizable(false);
             stage.show();
         } catch (Exception e) {

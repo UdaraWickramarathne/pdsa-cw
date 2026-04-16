@@ -7,6 +7,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -15,11 +17,8 @@ import javafx.scene.text.FontWeight;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.*;
 
 public class KnightsTourController {
-
-    private static final int BACKTRACK_TIMEOUT_SEC = 30;
 
     @FXML private Canvas boardCanvas;
     @FXML private RadioButton rb8x8;
@@ -33,15 +32,20 @@ public class KnightsTourController {
     @FXML private Button btnNewRound;
     @FXML private Button btnCheckTour;
     @FXML private Button btnShowSolution;
+    @FXML private BarChart<String, Number> timeChart;
 
     private int boardSize;
     private int startRow, startCol;
-    private int[] correctTour;        // from Warnsdorff
+    private int[] correctTour;
     private int currentRoundId = -1;
-    private List<Integer> playerClicks = new ArrayList<>(); // cell indices in click order
+    private List<Integer> playerClicks = new ArrayList<>();
 
     private final ToggleGroup sizeGroup = new ToggleGroup();
     private final Random rng = new Random();
+
+    private final XYChart.Series<String, Number> seriesWarnsdorff = new XYChart.Series<>();
+    private final XYChart.Series<String, Number> seriesBacktracking = new XYChart.Series<>();
+    private int roundCount = 0;
 
     @FXML
     public void initialize() {
@@ -53,6 +57,10 @@ public class KnightsTourController {
         sizeGroup.selectedToggleProperty().addListener((obs, old, nv) -> {
             boardSize = rb16x16.isSelected() ? 16 : 8;
         });
+
+        seriesWarnsdorff.setName("Warnsdorff");
+        seriesBacktracking.setName("Backtracking");
+        timeChart.getData().addAll(seriesWarnsdorff, seriesBacktracking);
     }
 
     @FXML
@@ -67,47 +75,33 @@ public class KnightsTourController {
         startRow = rng.nextInt(boardSize);
         startCol = rng.nextInt(boardSize);
         lblStart.setText("Start: (" + (startRow + 1) + ", " + (startCol + 1) + ")");
+        lblWarnsdorff.setText("Warnsdorff: computing...");
+        lblBacktracking.setText("Backtracking: computing...");
 
-        // Run Warnsdorff synchronously (fast)
-        long startW = System.currentTimeMillis();
-        WarnsdorffSolver wSolver = new WarnsdorffSolver(boardSize);
-        int[] wTour = wSolver.solve(startRow, startCol);
-        long wMs = System.currentTimeMillis() - startW;
-        lblWarnsdorff.setText("Warnsdorff: " + wMs + " ms" + (wTour != null ? " ✓" : " (failed)"));
+        final int capturedRow = startRow;
+        final int capturedCol = startCol;
+        final int capturedSize = boardSize;
 
-        correctTour = wTour;
+        Thread bg = new Thread(() -> {
+            // Warnsdorff (fast heuristic)
+            long startW = System.currentTimeMillis();
+            WarnsdorffSolver wSolver = new WarnsdorffSolver(capturedSize);
+            int[] wTour = wSolver.solve(capturedRow, capturedCol);
+            long wMs = System.currentTimeMillis() - startW;
 
-        // Run Backtracking in background thread with timeout
-        ExecutorService exec = Executors.newSingleThreadExecutor();
-        BacktrackingSolver btSolver = new BacktrackingSolver(boardSize);
-        Future<int[]> future = exec.submit(() -> btSolver.solve(startRow, startCol));
-        exec.shutdown();
-
-        Thread bgThread = new Thread(() -> {
+            // Backtracking — actual time recorded, no timeout
             long startBT = System.currentTimeMillis();
-            int[] btTour = null;
-            long btMs = -1;
-            try {
-                btTour = future.get(BACKTRACK_TIMEOUT_SEC, TimeUnit.SECONDS);
-                btMs = System.currentTimeMillis() - startBT;
-            } catch (TimeoutException e) {
-                btSolver.cancel();
-                future.cancel(true);
-                btMs = BACKTRACK_TIMEOUT_SEC * 1000L;
-            } catch (Exception e) {
-                btMs = -1;
-            }
-
-            final long finalBtMs = btMs;
-            final boolean timedOut = btTour == null;
+            BacktrackingSolver btSolver = new BacktrackingSolver(capturedSize);
+            int[] btTour = btSolver.solve(capturedRow, capturedCol);
+            long btMs = System.currentTimeMillis() - startBT;
 
             Platform.runLater(() -> {
-                String btLabel = timedOut
-                    ? "Backtracking: TIMEOUT (>" + BACKTRACK_TIMEOUT_SEC + "s) — too slow for N=" + boardSize
-                    : "Backtracking: " + finalBtMs + " ms ✓";
-                lblBacktracking.setText(btLabel);
+                correctTour = wTour;
 
-                int roundId = Game4DB.saveRound(boardSize, startRow, startCol, wMs, finalBtMs);
+                lblWarnsdorff.setText("Warnsdorff: " + wMs + " ms" + (wTour != null ? " ✓" : " (no tour)"));
+                lblBacktracking.setText("Backtracking: " + btMs + " ms" + (btTour != null ? " ✓" : " (no tour)"));
+
+                int roundId = Game4DB.saveRound(capturedSize, capturedRow, capturedCol, wMs, btMs);
                 currentRoundId = roundId;
 
                 lblStatus.setText("Click cells in the tour order, then press 'Check Tour'");
@@ -115,10 +109,14 @@ public class KnightsTourController {
                 btnShowSolution.setDisable(false);
                 btnNewRound.setDisable(false);
                 drawBoard(null);
+
+                String label = "R" + (++roundCount);
+                seriesWarnsdorff.getData().add(new XYChart.Data<>(label, wMs));
+                seriesBacktracking.getData().add(new XYChart.Data<>(label, btMs));
             });
         });
-        bgThread.setDaemon(true);
-        bgThread.start();
+        bg.setDaemon(true);
+        bg.start();
     }
 
     @FXML
@@ -133,7 +131,6 @@ public class KnightsTourController {
             return;
         }
 
-        // Validate that the tour starts at the required starting cell
         int requiredStart = startRow * boardSize + startCol;
         if (playerClicks.get(0) != requiredStart) {
             showAlert("Wrong Start",
@@ -145,7 +142,6 @@ public class KnightsTourController {
         int total = boardSize * boardSize;
 
         if (playerClicks.size() < total) {
-            // Check for DRAW: valid partial knight path from the correct start, covering ≥ 50 % of cells
             if (playerClicks.size() >= total / 2 && isValidPartialKnightPath(playerClicks, boardSize)) {
                 lblResult.setText("DRAW — Valid partial tour! You covered " +
                     playerClicks.size() + " of " + total + " cells correctly from the start.");
@@ -157,7 +153,6 @@ public class KnightsTourController {
             return;
         }
 
-        // Full tour: correct knight moves + visits every cell exactly once + starts at required cell
         if (isValidKnightTour(playerClicks, boardSize)) {
             lblResult.setText("Correct Knight's Tour! You WIN!");
             lblResult.setStyle("-fx-text-fill: #4ecca3; -fx-font-weight: bold; -fx-font-size: 14;");
@@ -170,7 +165,6 @@ public class KnightsTourController {
         }
     }
 
-    /** Returns true if the cell sequence forms a valid partial knight's path (no revisits, valid moves). */
     private boolean isValidPartialKnightPath(List<Integer> cells, int n) {
         boolean[] visited = new boolean[n * n];
         for (int i = 0; i < cells.size(); i++) {
@@ -229,13 +223,11 @@ public class KnightsTourController {
             }
         }
 
-        // Mark start position
         double sx = startCol * cw + cw / 2;
         double sy = startRow * ch + ch / 2;
         gc.setFill(Color.web("#e94560"));
         gc.fillOval(sx - cw * 0.3, sy - ch * 0.3, cw * 0.6, ch * 0.6);
 
-        // Draw player's path
         if (highlighted != null) {
             for (int step = 0; step < highlighted.size(); step++) {
                 int cell = highlighted.get(step);
@@ -249,7 +241,6 @@ public class KnightsTourController {
                 gc.setFont(Font.font("Monospace", FontWeight.BOLD, Math.max(8, (int)(cw * 0.4))));
                 gc.fillText(String.valueOf(step + 1), x + 4, y + ch * 0.6);
             }
-            // Draw lines between consecutive moves
             gc.setStroke(Color.web("#f9a826"));
             gc.setLineWidth(1.5);
             for (int i = 1; i < highlighted.size(); i++) {

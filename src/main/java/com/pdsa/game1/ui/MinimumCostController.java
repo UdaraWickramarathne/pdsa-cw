@@ -6,10 +6,11 @@ import com.pdsa.game1.db.Game1DB;
 import com.pdsa.game1.model.AssignmentResult;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 
 import java.util.Random;
-import java.util.concurrent.*;
 
 public class MinimumCostController {
 
@@ -20,12 +21,19 @@ public class MinimumCostController {
     @FXML private Label lblRoundId;
     @FXML private Button btnNewRound;
     @FXML private TextField tfN;
+    @FXML private BarChart<String, Number> timeChart;
 
     private static final Random RNG = new Random();
 
+    private final XYChart.Series<String, Number> seriesHungarian = new XYChart.Series<>();
+    private final XYChart.Series<String, Number> seriesBranchBound = new XYChart.Series<>();
+    private int roundCount = 0;
+
     @FXML
     public void initialize() {
-        // Leave fields blank — user enters N and clicks Run
+        seriesHungarian.setName("Hungarian O(N³)");
+        seriesBranchBound.setName("Greedy");
+        timeChart.getData().addAll(seriesHungarian, seriesBranchBound);
     }
 
     @FXML
@@ -33,11 +41,8 @@ public class MinimumCostController {
         tfN.setText(String.valueOf(50 + RNG.nextInt(51)));
     }
 
-    private static final int BB_TIMEOUT_SEC = 5;
-
     @FXML
     public void startNewRound() {
-        // Validate input
         int n;
         try {
             n = Integer.parseInt(tfN.getText().trim());
@@ -51,9 +56,8 @@ public class MinimumCostController {
         btnNewRound.setDisable(true);
         lblN.setText("N = " + n);
         taHungarian.setText("Computing...");
-        taBranchBound.setText("Computing (timeout: " + BB_TIMEOUT_SEC + "s)...");
+        taBranchBound.setText("Computing...");
 
-        // Generate random cost matrix: values $20 – $200
         int[][] costMatrix = new int[n][n];
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
@@ -68,56 +72,25 @@ public class MinimumCostController {
             int hCost = hungarian.totalCost(hAssignment);
             AssignmentResult hResult = new AssignmentResult("Hungarian Algorithm", hAssignment, hCost, hungarianMs);
 
-            // Run Branch and Bound on the actual N×N matrix with a timeout
-            BranchAndBoundAssignment bbSolver = new BranchAndBoundAssignment(costMatrix);
-            ExecutorService exec = Executors.newSingleThreadExecutor();
-            Future<int[]> future = exec.submit(bbSolver::solve);
-            exec.shutdown();
-
+            // Run Greedy Algorithm
             long startBB = System.currentTimeMillis();
-            int[] bbAssignment = null;
-            long bbMs;
-            boolean bbTimedOut;
-            try {
-                bbAssignment = future.get(BB_TIMEOUT_SEC, TimeUnit.SECONDS);
-                bbMs = System.currentTimeMillis() - startBB;
-                bbTimedOut = false;
-            } catch (TimeoutException e) {
-                bbSolver.cancel();
-                future.cancel(true);
-                bbMs = BB_TIMEOUT_SEC * 1000L;
-                bbTimedOut = true;
-            } catch (Exception e) {
-                bbMs = -1;
-                bbTimedOut = true;
-            }
-
-            final long finalBbMs = bbMs;
-            final boolean finalBbTimedOut = bbTimedOut;
-            final int[] finalBbAssignment = bbAssignment;
+            BranchAndBoundAssignment bbSolver = new BranchAndBoundAssignment(costMatrix);
+            int[] bbAssignment = bbSolver.solve();
+            long bbMs = System.currentTimeMillis() - startBB;
+            int bbCost = bbSolver.getMinCost();
+            AssignmentResult bbResult = new AssignmentResult("Greedy Algorithm", bbAssignment, bbCost, bbMs);
 
             Platform.runLater(() -> {
-                int roundId = Game1DB.saveRound(n, hCost, hungarianMs, finalBbMs);
+                int roundId = Game1DB.saveRound(n, hCost, hungarianMs, bbMs);
                 lblRoundId.setText("Round ID: " + roundId);
                 taHungarian.setText(hResult.summaryText());
-
-                if (finalBbTimedOut) {
-                    taBranchBound.setText(
-                        "Branch & Bound\n" +
-                        "TIMEOUT (>" + BB_TIMEOUT_SEC + "s) — B&B is O(N!) and impractical for N=" + n + "\n" +
-                        "Time recorded: " + finalBbMs + " ms\n\n" +
-                        "Note: Hungarian O(N³) is the practical algorithm for large N.\n" +
-                        "Hungarian optimal cost: $" + hCost
-                    );
-                } else {
-                    int bbCost = bbSolver.getMinCost();
-                    AssignmentResult bbResult = new AssignmentResult(
-                        "Branch & Bound", finalBbAssignment, bbCost, finalBbMs);
-                    taBranchBound.setText(bbResult.summaryText());
-                }
-
+                taBranchBound.setText(bbResult.summaryText());
                 lblStatus.setText("Round complete. Optimal cost: $" + hCost);
                 btnNewRound.setDisable(false);
+
+                String label = "R" + (++roundCount);
+                seriesHungarian.getData().add(new XYChart.Data<>(label, hungarianMs));
+                seriesBranchBound.getData().add(new XYChart.Data<>(label, bbMs));
             });
         });
         bg.setDaemon(true);

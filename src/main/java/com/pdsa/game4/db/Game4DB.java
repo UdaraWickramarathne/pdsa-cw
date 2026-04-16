@@ -1,6 +1,8 @@
 package com.pdsa.game4.db;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Database access layer for Game 4 (Knight's Tour).
@@ -48,5 +50,55 @@ public class Game4DB {
         } catch (SQLException e) {
             System.err.println("[Game4DB] saveWinner error: " + e.getMessage());
         }
+    }
+
+    /** Returns up to {@code limit} recent rounds, newest first, as String arrays for display. */
+    public static List<String[]> getRecentRounds(int limit) {
+        List<String[]> rows = new ArrayList<>();
+        String sql = "SELECT round_id, board_size, start_row, start_col, warnsdorff_ms, backtracking_ms, played_at " +
+                     "FROM game4_rounds ORDER BY round_id DESC LIMIT ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    rows.add(new String[]{
+                        String.valueOf(rs.getInt("round_id")),
+                        String.valueOf(rs.getInt("board_size")),
+                        String.valueOf(rs.getInt("start_row")),
+                        String.valueOf(rs.getInt("start_col")),
+                        String.valueOf(rs.getLong("warnsdorff_ms")),
+                        String.valueOf(rs.getLong("backtracking_ms")),
+                        rs.getString("played_at")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[Game4DB] getRecentRounds error: " + e.getMessage());
+        }
+        return rows;
+    }
+
+    /** Returns up to {@code limit} recent winners, newest first, as String arrays for display. */
+    public static List<String[]> getRecentWinners(int limit) {
+        List<String[]> rows = new ArrayList<>();
+        String sql = "SELECT id, round_id, player_name, won_at FROM game4_winners ORDER BY id DESC LIMIT ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    rows.add(new String[]{
+                        String.valueOf(rs.getInt("id")),
+                        String.valueOf(rs.getInt("round_id")),
+                        rs.getString("player_name"),
+                        rs.getString("won_at")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[Game4DB] getRecentWinners error: " + e.getMessage());
+        }
+        return rows;
     }
 }

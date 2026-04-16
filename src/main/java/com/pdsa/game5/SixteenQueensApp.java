@@ -17,7 +17,7 @@ public class SixteenQueensApp {
             );
             Stage stage = new Stage();
             stage.setTitle("Game 5 — Sixteen Queens Puzzle");
-            stage.setScene(new Scene(loader.load(), 900, 640));
+            stage.setScene(new Scene(loader.load(), 900, 880));
             stage.setResizable(false);
             stage.show();
         } catch (Exception e) {

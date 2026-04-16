@@ -15,7 +15,6 @@ public class BacktrackingSolver {
     private final int n;
     private int[][] board;
     private int[] tour;
-    private volatile boolean cancelled = false;
 
     public BacktrackingSolver(int boardSize) {
         this.n = boardSize;
@@ -40,7 +39,6 @@ public class BacktrackingSolver {
     }
 
     private boolean backtrack(int row, int col, int step) {
-        if (cancelled) return false;
         if (step == n * n) return true;
 
         // Sort moves by Warnsdorff degree for faster convergence
@@ -80,6 +78,4 @@ public class BacktrackingSolver {
         return r >= 0 && r < n && c >= 0 && c < n;
     }
 
-    /** Signal the solver to stop (used for timeout). */
-    public void cancel() { this.cancelled = true; }
 }

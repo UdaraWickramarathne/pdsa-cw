@@ -4,6 +4,7 @@
 <?import javafx.scene.canvas.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.pdsa.game3.ui.TrafficController"
@@ -12,7 +13,7 @@
     <Text text="Traffic Simulation — Max Flow" style="-fx-fill: #e94560; -fx-font-size: 22; -fx-font-weight: bold;"/>
 
     <!-- Graph canvas -->
-    <Canvas fx:id="graphCanvas" width="760" height="320"
+    <Canvas fx:id="graphCanvas" width="760" height="300"
             style="-fx-border-color: #333355; -fx-border-width: 1;"/>
 
     <Label text="Green = Source (A)   |   Red = Sink (T)   |   Edge labels = capacity (vehicles/min)"
@@ -41,4 +42,11 @@
     </HBox>
 
     <Label fx:id="lblResult" text="" wrapText="true"/>
+
+    <!-- Algorithm timing chart -->
+    <Label text="Algorithm Timing per Round (ms)" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
+    <BarChart fx:id="timeChart" prefHeight="220" animated="false" VBox.vgrow="NEVER">
+        <xAxis><CategoryAxis label="Round"/></xAxis>
+        <yAxis><NumberAxis label="Time (ms)"/></yAxis>
+    </BarChart>
 </VBox>

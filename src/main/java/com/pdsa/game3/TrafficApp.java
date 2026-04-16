@@ -17,7 +17,7 @@ public class TrafficApp {
             );
             Stage stage = new Stage();
             stage.setTitle("Game 3 — Traffic Simulation (Max Flow)");
-            stage.setScene(new Scene(loader.load(), 800, 560));
+            stage.setScene(new Scene(loader.load(), 800, 820));
             stage.setResizable(false);
             stage.show();
         } catch (Exception e) {

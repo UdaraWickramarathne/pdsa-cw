@@ -17,7 +17,7 @@ public class SnakeLadderApp {
             );
             Stage stage = new Stage();
             stage.setTitle("Game 2 — Snake and Ladder");
-            stage.setScene(new Scene(loader.load(), 900, 620));
+            stage.setScene(new Scene(loader.load(), 900, 860));
             stage.setResizable(false);
             stage.show();
         } catch (Exception e) {

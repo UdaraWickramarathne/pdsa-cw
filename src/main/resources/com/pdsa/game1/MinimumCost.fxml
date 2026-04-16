@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.pdsa.game1.ui.MinimumCostController"
@@ -33,12 +34,12 @@
     <HBox spacing="16" VBox.vgrow="ALWAYS">
         <VBox spacing="6" HBox.hgrow="ALWAYS">
             <Label text="Hungarian Algorithm (O(N³))" style="-fx-text-fill: #4ecca3; -fx-font-weight: bold;"/>
-            <TextArea fx:id="taHungarian" editable="false" wrapText="true" prefHeight="340"
+            <TextArea fx:id="taHungarian" editable="false" wrapText="true" prefHeight="240"
                       style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0; -fx-font-family: monospace;"/>
         </VBox>
         <VBox spacing="6" HBox.hgrow="ALWAYS">
-            <Label text="Branch and Bound" style="-fx-text-fill: #f9a826; -fx-font-weight: bold;"/>
-            <TextArea fx:id="taBranchBound" editable="false" wrapText="true" prefHeight="340"
+            <Label text="Greedy" style="-fx-text-fill: #f9a826; -fx-font-weight: bold;"/>
+            <TextArea fx:id="taBranchBound" editable="false" wrapText="true" prefHeight="240"
                       style="-fx-control-inner-background: #16213e; -fx-text-fill: #e0e0e0; -fx-font-family: monospace;"/>
         </VBox>
     </HBox>
@@ -49,4 +50,11 @@
                 prefWidth="160" prefHeight="38"
                 style="-fx-background-color: #e94560; -fx-text-fill: white; -fx-font-weight: bold; -fx-border-radius: 5; -fx-background-radius: 5; -fx-cursor: hand;"/>
     </HBox>
+
+    <!-- Algorithm timing chart -->
+    <Label text="Algorithm Timing per Round (ms)" style="-fx-text-fill: #a8a8b3; -fx-font-weight: bold;"/>
+    <BarChart fx:id="timeChart" prefHeight="220" animated="false" VBox.vgrow="NEVER">
+        <xAxis><CategoryAxis label="Round"/></xAxis>
+        <yAxis><NumberAxis label="Time (ms)"/></yAxis>
+    </BarChart>
 </VBox>

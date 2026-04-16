@@ -7,6 +7,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -28,12 +30,29 @@ public class SixteenQueensController {
     @FXML private Label lblTiming;
     @FXML private Label lblUnclaimed;
     @FXML private Button btnPlaceOnBoard;
+    @FXML private BarChart<String, Number> timeChart;
 
-    private int[] currentQueens = null; // queens currently displayed on board
+    private int[] currentQueens = null;
+
+    private final XYChart.Series<String, Number> seriesSeq = new XYChart.Series<>();
+    private final XYChart.Series<String, Number> seriesThr = new XYChart.Series<>();
 
     @FXML
     public void initialize() {
+        seriesSeq.setName("Sequential");
+        seriesThr.setName("Threaded");
+        timeChart.getData().addAll(seriesSeq, seriesThr);
+        loadChartFromDB();
         refreshStatus();
+    }
+
+    private void loadChartFromDB() {
+        List<long[]> timings = Game5DB.getAllTimings();
+        for (int i = 0; i < timings.size(); i++) {
+            String label = "R" + (i + 1);
+            seriesSeq.getData().add(new XYChart.Data<>(label, timings.get(i)[0]));
+            seriesThr.getData().add(new XYChart.Data<>(label, timings.get(i)[1]));
+        }
     }
 
     /** Precomputes all solutions (one-time). Shows progress via background thread. */
@@ -70,6 +89,11 @@ public class SixteenQueensController {
                         "Sequential: " + seqMs + " ms  |  Threaded: " + thrMs + " ms  |  Total solutions: " + solutions.size()
                     );
                     lblStatus.setText("Precompute complete! " + solutions.size() + " solutions saved.");
+
+                    String label = "R" + (seriesSeq.getData().size() + 1);
+                    seriesSeq.getData().add(new XYChart.Data<>(label, seqMs));
+                    seriesThr.getData().add(new XYChart.Data<>(label, thrMs));
+
                     refreshStatus();
                     btnPrecompute.setDisable(false);
                 });

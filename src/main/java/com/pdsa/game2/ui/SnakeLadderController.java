@@ -7,6 +7,8 @@ import com.pdsa.game2.model.Board;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -28,6 +30,7 @@ public class SnakeLadderController {
     @FXML private Button btnSubmit;
     @FXML private Label lblResult;
     @FXML private Button btnNewRound;
+    @FXML private BarChart<String, Number> timeChart;
 
     private Board currentBoard;
     private int correctAnswer;
@@ -35,6 +38,9 @@ public class SnakeLadderController {
     private final Random rng = new Random();
 
     private final ToggleGroup choiceGroup = new ToggleGroup();
+    private final XYChart.Series<String, Number> seriesBfs = new XYChart.Series<>();
+    private final XYChart.Series<String, Number> seriesDp  = new XYChart.Series<>();
+    private int roundCount = 0;
 
     @FXML
     public void initialize() {
@@ -43,6 +49,10 @@ public class SnakeLadderController {
         rbChoice1.setToggleGroup(choiceGroup);
         rbChoice2.setToggleGroup(choiceGroup);
         rbChoice3.setToggleGroup(choiceGroup);
+
+        seriesBfs.setName("BFS");
+        seriesDp.setName("Dynamic Programming");
+        timeChart.getData().addAll(seriesBfs, seriesDp);
     }
 
     @FXML
@@ -79,6 +89,11 @@ public class SnakeLadderController {
 
         // Save round
         currentRoundId = Game2DB.saveRound(n, correctAnswer, bfsMs, dpMs);
+
+        // Update chart
+        String label = "R" + (++roundCount);
+        seriesBfs.getData().add(new XYChart.Data<>(label, bfsMs));
+        seriesDp.getData().add(new XYChart.Data<>(label, dpMs));
 
         // Generate 3 choices: correct + 2 distractors
         int d1 = correctAnswer + 1 + rng.nextInt(3);

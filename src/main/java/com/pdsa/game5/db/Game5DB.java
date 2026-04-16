@@ -137,6 +137,52 @@ public class Game5DB {
         return sb.toString();
     }
 
+    /** Returns all timing records as String arrays for display: [id, sequential_ms, threaded_ms, total_solutions, recorded_at]. */
+    public static List<String[]> getAllTimingsFull() {
+        List<String[]> rows = new ArrayList<>();
+        String sql = "SELECT id, sequential_ms, threaded_ms, total_solutions, recorded_at " +
+                     "FROM game5_timing ORDER BY id DESC";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                rows.add(new String[]{
+                    String.valueOf(rs.getInt("id")),
+                    String.valueOf(rs.getLong("sequential_ms")),
+                    String.valueOf(rs.getLong("threaded_ms")),
+                    String.valueOf(rs.getInt("total_solutions")),
+                    rs.getString("recorded_at")
+                });
+            }
+        } catch (SQLException e) {
+            System.err.println("[Game5DB] getAllTimingsFull error: " + e.getMessage());
+        }
+        return rows;
+    }
+
+    /** Returns up to {@code limit} recent winners, newest first, as String arrays for display. */
+    public static List<String[]> getRecentWinners(int limit) {
+        List<String[]> rows = new ArrayList<>();
+        String sql = "SELECT id, solution_id, player_name, won_at FROM game5_winners ORDER BY id DESC LIMIT ?";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    rows.add(new String[]{
+                        String.valueOf(rs.getInt("id")),
+                        String.valueOf(rs.getInt("solution_id")),
+                        rs.getString("player_name"),
+                        rs.getString("won_at")
+                    });
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("[Game5DB] getRecentWinners error: " + e.getMessage());
+        }
+        return rows;
+    }
+
     /** Parses a placement string back to int[] (0-indexed). */
     public static int[] parsePlacement(String placement) {
         String[] parts = placement.trim().split("\\s+");
@@ -160,5 +206,21 @@ public class Game5DB {
             System.err.println("[Game5DB] getLastTiming error: " + e.getMessage());
         }
         return null;
+    }
+
+    /** Returns all timing records ordered by id. Each entry is [sequential_ms, threaded_ms]. */
+    public static List<long[]> getAllTimings() {
+        List<long[]> result = new ArrayList<>();
+        String sql = "SELECT sequential_ms, threaded_ms FROM game5_timing ORDER BY id ASC";
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                result.add(new long[]{rs.getLong(1), rs.getLong(2)});
+            }
+        } catch (SQLException e) {
+            System.err.println("[Game5DB] getAllTimings error: " + e.getMessage());
+        }
+        return result;
     }
 }

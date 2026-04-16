@@ -14,25 +14,50 @@
 
     <VBox spacing="12" alignment="CENTER" style="-fx-padding: 20 0 0 0;">
 
-        <Button text="1.  Minimum Cost" onAction="#openMinimumCost"
-                prefWidth="320" prefHeight="50"
-                styleClass="menu-button"/>
+        <HBox spacing="8" alignment="CENTER">
+            <Button text="1.  Minimum Cost" onAction="#openMinimumCost"
+                    prefWidth="232" prefHeight="50"
+                    styleClass="menu-button"/>
+            <Button text="Records" onAction="#openGame1Records"
+                    prefWidth="80" prefHeight="50"
+                    styleClass="records-button"/>
+        </HBox>
 
-        <Button text="2.  Snake and Ladder" onAction="#openSnakeLadder"
-                prefWidth="320" prefHeight="50"
-                styleClass="menu-button"/>
+        <HBox spacing="8" alignment="CENTER">
+            <Button text="2.  Snake and Ladder" onAction="#openSnakeLadder"
+                    prefWidth="232" prefHeight="50"
+                    styleClass="menu-button"/>
+            <Button text="Records" onAction="#openGame2Records"
+                    prefWidth="80" prefHeight="50"
+                    styleClass="records-button"/>
+        </HBox>
 
-        <Button text="3.  Traffic Simulation" onAction="#openTrafficSimulation"
-                prefWidth="320" prefHeight="50"
-                styleClass="menu-button"/>
+        <HBox spacing="8" alignment="CENTER">
+            <Button text="3.  Traffic Simulation" onAction="#openTrafficSimulation"
+                    prefWidth="232" prefHeight="50"
+                    styleClass="menu-button"/>
+            <Button text="Records" onAction="#openGame3Records"
+                    prefWidth="80" prefHeight="50"
+                    styleClass="records-button"/>
+        </HBox>
 
-        <Button text="4.  Knight's Tour" onAction="#openKnightsTour"
-                prefWidth="320" prefHeight="50"
-                styleClass="menu-button"/>
+        <HBox spacing="8" alignment="CENTER">
+            <Button text="4.  Knight's Tour" onAction="#openKnightsTour"
+                    prefWidth="232" prefHeight="50"
+                    styleClass="menu-button"/>
+            <Button text="Records" onAction="#openGame4Records"
+                    prefWidth="80" prefHeight="50"
+                    styleClass="records-button"/>
+        </HBox>
 
-        <Button text="5.  Sixteen Queens" onAction="#openSixteenQueens"
-                prefWidth="320" prefHeight="50"
-                styleClass="menu-button"/>
+        <HBox spacing="8" alignment="CENTER">
+            <Button text="5.  Sixteen Queens" onAction="#openSixteenQueens"
+                    prefWidth="232" prefHeight="50"
+                    styleClass="menu-button"/>
+            <Button text="Records" onAction="#openGame5Records"
+                    prefWidth="80" prefHeight="50"
+                    styleClass="records-button"/>
+        </HBox>
 
     </VBox>
 

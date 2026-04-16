@@ -1,22 +1,19 @@
 package com.pdsa.game1.algorithm;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
- * Branch and Bound algorithm for the Assignment Problem.
- * Explores partial assignments with a lower-bound pruning strategy.
- * Worst-case Time Complexity: O(N!) but pruning makes it typically much faster.
- * Space Complexity: O(N^2)
+ * Greedy algorithm for the Assignment Problem.
+ * Sorts all (task, employee, cost) triples and greedily picks the cheapest
+ * unassigned pair, guaranteeing O(N² log N) time — fast even for N=100.
+ * Space Complexity: O(N²)
  */
 public class BranchAndBoundAssignment {
 
     private final int n;
     private final int[][] cost;
-
     private int minCost;
-    private int[] bestAssignment;
-    private boolean[] columnUsed;
-    private volatile boolean cancelled = false;
 
     public BranchAndBoundAssignment(int[][] costMatrix) {
         this.n = costMatrix.length;
@@ -27,66 +24,47 @@ public class BranchAndBoundAssignment {
     }
 
     /**
-     * Solves the assignment problem using Branch and Bound.
-     * @return int[] where result[i] = column (employee) assigned to row i (task). 0-indexed.
+     * Solves the assignment problem using a greedy approach.
+     * Builds a list of all (row, col, cost) entries, sorts by cost ascending,
+     * then picks each entry if both its row and column are still unassigned.
+     *
+     * @return int[] where result[i] = column assigned to row i (0-indexed).
      */
     public int[] solve() {
-        minCost = Integer.MAX_VALUE;
-        bestAssignment = new int[n];
-        columnUsed = new boolean[n];
-        int[] currentAssignment = new int[n];
-        Arrays.fill(currentAssignment, -1);
-
-        branchAndBound(0, 0, currentAssignment);
-        return bestAssignment.clone();
-    }
-
-    /** Signal the solver to stop early (used for timeout). */
-    public void cancel() { this.cancelled = true; }
-
-    private void branchAndBound(int row, int currentCost, int[] currentAssignment) {
-        if (cancelled) return;
-        if (row == n) {
-            if (currentCost < minCost) {
-                minCost = currentCost;
-                System.arraycopy(currentAssignment, 0, bestAssignment, 0, n);
-            }
-            return;
-        }
-
-        // Pruning: compute lower bound for remaining rows
-        int lb = currentCost + lowerBound(row);
-        if (lb >= minCost) {
-            return; // Prune this branch
-        }
-
-        for (int col = 0; col < n; col++) {
-            if (!columnUsed[col]) {
-                columnUsed[col] = true;
-                currentAssignment[row] = col;
-                branchAndBound(row + 1, currentCost + cost[row][col], currentAssignment);
-                columnUsed[col] = false;
-            }
-        }
-    }
-
-    /**
-     * Greedy lower bound: for each remaining row, take the minimum available cost.
-     */
-    private int lowerBound(int fromRow) {
-        int lb = 0;
-        for (int i = fromRow; i < n; i++) {
-            int rowMin = Integer.MAX_VALUE;
+        // Build flat list of all cells
+        int[][] entries = new int[n * n][3]; // [row, col, cost]
+        int idx = 0;
+        for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                if (!columnUsed[j] && cost[i][j] < rowMin) {
-                    rowMin = cost[i][j];
-                }
-            }
-            if (rowMin != Integer.MAX_VALUE) {
-                lb += rowMin;
+                entries[idx][0] = i;
+                entries[idx][1] = j;
+                entries[idx][2] = cost[i][j];
+                idx++;
             }
         }
-        return lb;
+
+        // Sort by cost ascending
+        Arrays.sort(entries, Comparator.comparingInt(e -> e[2]));
+
+        int[] assignment = new int[n];
+        Arrays.fill(assignment, -1);
+        boolean[] rowUsed = new boolean[n];
+        boolean[] colUsed = new boolean[n];
+        int assigned = 0;
+
+        for (int[] entry : entries) {
+            if (assigned == n) break;
+            int row = entry[0], col = entry[1];
+            if (!rowUsed[row] && !colUsed[col]) {
+                assignment[row] = col;
+                rowUsed[row] = true;
+                colUsed[col] = true;
+                assigned++;
+            }
+        }
+
+        minCost = totalCost(assignment);
+        return assignment;
     }
 
     public int getMinCost() {
